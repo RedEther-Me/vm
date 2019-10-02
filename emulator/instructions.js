@@ -5,7 +5,7 @@ module.exports = {
   MOV_LIT_R1: 0x2,
   MOV_LIT_R2: 0x3,
 
-  ARITHMATIC: 0x4,
+  arithmetic: 0x4,
 
   PRINT_REG: 0x5
 };

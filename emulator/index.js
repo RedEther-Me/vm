@@ -18,6 +18,7 @@ async function processFile() {
 
   lines.forEach((line, index) => {
     wBytes[index] = parseInt(line, 2);
+    console.log(index, line, wBytes[index]);
   });
 
   console.log(memory);

@@ -1,3 +1,7 @@
+const chalk = require("chalk");
+
+const { convertToInstruction } = require("../helpers");
+
 const INSTRUCTIONS = require("../emulator/instructions");
 
 const registerLookup = {
@@ -12,14 +16,6 @@ const registerLookup = {
   r7: 8,
   r8: 9
 };
-
-const shift2 = 4;
-const shift3 = 8;
-const shift4 = 16;
-const shift5 = 32;
-const shift6 = 64;
-const shift7 = 128;
-const shift8 = 256;
 
 module.exports = parser => {
   const BaseAsmVisitor = parser.getBaseCstVisitorConstructor();
@@ -48,15 +44,23 @@ module.exports = parser => {
       const { children } = ctx;
       const { LITERAL, REG } = children;
 
-      const instruction = INSTRUCTIONS.MOV_LIT_REG;
-      const value = this.literal(LITERAL[0]) * shift8;
-      const register = this.register(REG[0]) * shift2;
+      const fullInstruction = convertToInstruction(
+        {
+          V: { P: 0xff00, S: 8 },
+          R: { P: 0x0030, S: 4 },
+          I: { P: 0x000f, S: 0 }
+        },
+        {
+          I: INSTRUCTIONS.MOV_LIT_REG,
+          R: this.register(REG[0]),
+          V: this.literal(LITERAL[0])
+        }
+      );
 
-      const fullInstruction = instruction + value + register;
       return fullInstruction.toString(2).padStart(16, "0");
     }
 
-    arithmatic(ctx) {
+    arithmetic(ctx) {
       const { children } = ctx;
       const { REG, ADD, SUB, DIV, MULT } = children;
 
@@ -67,13 +71,21 @@ module.exports = parser => {
         if (MULT) return 3;
       };
 
-      const instruction = INSTRUCTIONS.ARITHMATIC;
-      const register1 = this.register(REG[0]) * shift2;
-      const register2 = this.register(REG[1]) * shift4;
+      const fullInstruction = convertToInstruction(
+        {
+          O: { P: 0x3, S: 8 },
+          S: { P: 0x3, S: 6 },
+          T: { P: 0x3, S: 4 },
+          I: { P: 0xf, S: 0 }
+        },
+        {
+          I: INSTRUCTIONS.arithmetic,
+          S: this.register(REG[0]),
+          T: this.register(REG[1]),
+          O: opLookup()
+        }
+      );
 
-      const operation = opLookup() * shift6;
-
-      const fullInstruction = instruction + register1 + register2 + operation;
       return fullInstruction.toString(2).padStart(16, "0");
     }
 

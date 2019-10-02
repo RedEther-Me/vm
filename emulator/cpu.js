@@ -1,3 +1,5 @@
+const {convertFromInstruction} = require('../helpers');
+
 const createMemory = require("./memory");
 const INSTRUCTIONS = require("./instructions");
 
@@ -64,18 +66,16 @@ class CPU {
   }
 
   execute(command) {
-    const instruction = command & 15;
-    console.log(
-      instruction,
-      command.toString(2),
-      instruction.toString(2),
-      (15).toString(2)
-    );
-
-    console.log(instruction.toString(16).padStart(2));
+    const parsed = 
     switch (instruction) {
       case INSTRUCTIONS.TERMINATE: {
-        process.exit(0);
+        return process.exit(0);
+      }
+
+      case INSTRUCTIONS.MOV_LIT_REG: {
+        const literal = this.fetch16();
+        this.setRegister("r1", literal);
+        return;
       }
 
       default: {

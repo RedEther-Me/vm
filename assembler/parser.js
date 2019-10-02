@@ -18,7 +18,7 @@ class AsmParser extends CstParser {
       $.CONSUME(allTokens.REGISTER);
     });
 
-    $.RULE("arithmatic", () => {
+    $.RULE("arithmetic", () => {
       $.OR([
         { ALT: () => $.CONSUME(allTokens.ADD) },
         { ALT: () => $.CONSUME(allTokens.SUB) }
@@ -30,7 +30,7 @@ class AsmParser extends CstParser {
     $.RULE("statement", () => {
       $.OR([
         { ALT: () => $.SUBRULE($.mov) },
-        { ALT: () => $.SUBRULE($.arithmatic) }
+        { ALT: () => $.SUBRULE($.arithmetic) }
       ]);
     });
 
