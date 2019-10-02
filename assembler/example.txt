@@ -1,0 +1,4 @@
+MOV 3 r1
+MOV 4 r2
+ADD r1 r2
+TERM
