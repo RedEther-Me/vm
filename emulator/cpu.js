@@ -1,4 +1,4 @@
-const {convertFromInstruction} = require('../helpers');
+const { convertFromInstruction } = require("../helpers");
 
 const createMemory = require("./memory");
 const INSTRUCTIONS = require("./instructions");
@@ -57,25 +57,62 @@ class CPU {
 
   fetch16() {
     const nextInstructionAddress = this.getRegister("ip");
-    const instruction = this.memory.getUint16(nextInstructionAddress, true);
+    const instruction = this.memory.getUint16(nextInstructionAddress);
     // console.log(
     //   this.memory.getUint16(nextInstructionAddress, true).toString(2)
     // );
-    this.setRegister("ip", nextInstructionAddress + 1);
+    console.log(nextInstructionAddress);
+    this.setRegister("ip", nextInstructionAddress + 2);
     return instruction;
   }
 
   execute(command) {
-    const parsed = 
+    const instruction = command & 15;
+
+    console.log(command, instruction.toString(2).padStart(16, "0"));
+
     switch (instruction) {
-      case INSTRUCTIONS.TERMINATE: {
+      case INSTRUCTIONS.TERMINATE.instruction: {
         return process.exit(0);
       }
 
-      case INSTRUCTIONS.MOV_LIT_REG: {
-        const literal = this.fetch16();
-        this.setRegister("r1", literal);
+      case INSTRUCTIONS.MOV_LIT_REG.instruction: {
+        const { V, R } = convertFromInstruction(
+          INSTRUCTIONS.MOV_LIT_REG.pattern,
+          instruction
+        );
+        this.registers.setUint16(R * 2, V);
         return;
+      }
+
+      case INSTRUCTIONS.ARITHMETIC.instruction: {
+        const { S, T, O } = convertFromInstruction(
+          INSTRUCTIONS.ARITHMETIC.pattern,
+          instruction
+        );
+        const v1 = this.registers.getUint16(S * 2);
+        const v2 = this.registers.getUint16(T * 2);
+
+        switch (O) {
+          case 0x0: {
+            this.registers.setUint16(T * 2, v1 + v2);
+            return;
+          }
+          case 0x1: {
+            this.registers.setUint16(T * 2, v1 - v2);
+            return;
+          }
+          case 0x2: {
+            this.registers.setUint16(T * 2, v1 / v2);
+            return;
+          }
+          case 0x3: {
+            this.registers.setUint16(T * 2, v1 * v2);
+            return;
+          }
+          default:
+            throw new Error("arithmetic: no valid operation");
+        }
       }
 
       default: {

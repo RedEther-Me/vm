@@ -45,13 +45,9 @@ module.exports = parser => {
       const { LITERAL, REG } = children;
 
       const fullInstruction = convertToInstruction(
+        INSTRUCTIONS.MOV_LIT_REG.pattern,
         {
-          V: { P: 0xff00, S: 8 },
-          R: { P: 0x0030, S: 4 },
-          I: { P: 0x000f, S: 0 }
-        },
-        {
-          I: INSTRUCTIONS.MOV_LIT_REG,
+          I: INSTRUCTIONS.MOV_LIT_REG.instruction,
           R: this.register(REG[0]),
           V: this.literal(LITERAL[0])
         }
@@ -72,14 +68,9 @@ module.exports = parser => {
       };
 
       const fullInstruction = convertToInstruction(
+        INSTRUCTIONS.ARITHMETIC.pattern,,
         {
-          O: { P: 0x3, S: 8 },
-          S: { P: 0x3, S: 6 },
-          T: { P: 0x3, S: 4 },
-          I: { P: 0xf, S: 0 }
-        },
-        {
-          I: INSTRUCTIONS.arithmetic,
+          I: INSTRUCTIONS.ARITHMETIC.instruction,
           S: this.register(REG[0]),
           T: this.register(REG[1]),
           O: opLookup()
