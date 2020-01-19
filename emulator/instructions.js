@@ -1,5 +1,7 @@
 module.exports = {
-  TERMINATE: 0x0,
+  TERMINATE: {
+    instruction: 0x0
+  },
 
   MOV_LIT_REG: {
     instruction: 0x1,

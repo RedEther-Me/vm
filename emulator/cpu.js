@@ -51,25 +51,19 @@ class CPU {
     if (!(name in this.registerMap)) {
       throw new Error(`setRegister: Unable to find register ${name}`);
     }
-
-    return this.registers.setUint16(this.registerMap[name], value);
+    this.registers.setUint16(this.registerMap[name], value);
+    return;
   }
 
   fetch16() {
     const nextInstructionAddress = this.getRegister("ip");
-    const instruction = this.memory.getUint16(nextInstructionAddress);
-    // console.log(
-    //   this.memory.getUint16(nextInstructionAddress, true).toString(2)
-    // );
-    console.log(nextInstructionAddress);
+    const instruction = this.memory.getUint16(nextInstructionAddress, true);
     this.setRegister("ip", nextInstructionAddress + 2);
     return instruction;
   }
 
   execute(command) {
     const instruction = command & 15;
-
-    console.log(command, instruction.toString(2).padStart(16, "0"));
 
     switch (instruction) {
       case INSTRUCTIONS.TERMINATE.instruction: {
@@ -79,8 +73,9 @@ class CPU {
       case INSTRUCTIONS.MOV_LIT_REG.instruction: {
         const { V, R } = convertFromInstruction(
           INSTRUCTIONS.MOV_LIT_REG.pattern,
-          instruction
+          command
         );
+
         this.registers.setUint16(R * 2, V);
         return;
       }
@@ -88,7 +83,7 @@ class CPU {
       case INSTRUCTIONS.ARITHMETIC.instruction: {
         const { S, T, O } = convertFromInstruction(
           INSTRUCTIONS.ARITHMETIC.pattern,
-          instruction
+          command
         );
         const v1 = this.registers.getUint16(S * 2);
         const v2 = this.registers.getUint16(T * 2);
@@ -156,6 +151,14 @@ class CPU {
   step() {
     const instruction = this.fetch16();
     return this.execute(instruction);
+  }
+
+  run() {
+    const halt = this.step();
+
+    if (!halt) {
+      setImmediate(() => this.run());
+    }
   }
 }
 

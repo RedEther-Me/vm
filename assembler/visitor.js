@@ -68,7 +68,7 @@ module.exports = parser => {
       };
 
       const fullInstruction = convertToInstruction(
-        INSTRUCTIONS.ARITHMETIC.pattern,,
+        INSTRUCTIONS.ARITHMETIC.pattern,
         {
           I: INSTRUCTIONS.ARITHMETIC.instruction,
           S: this.register(REG[0]),
