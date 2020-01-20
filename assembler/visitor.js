@@ -17,7 +17,8 @@ const registerLookup = {
   r8: 9
 };
 
-const i2s = (instruction) => instruction.toString(2).padStart(16, "0");
+const i2s = (instruction, length = 8) =>
+  instruction.toString(2).padStart(length, "0");
 
 module.exports = parser => {
   const BaseAsmVisitor = parser.getBaseCstVisitorConstructor();
@@ -42,7 +43,7 @@ module.exports = parser => {
     }
 
     hexOrLit(children) {
-      const { HEX_VALUE, LITERAL} = children;
+      const { HEX_VALUE, LITERAL } = children;
       if (HEX_VALUE) {
         return this.hex(HEX_VALUE[0]);
       }
@@ -61,38 +62,35 @@ module.exports = parser => {
 
       const value = this.hexOrLit(children);
 
-      const fullInstruction = convertToInstruction(
-        INSTRUCTIONS.MOV_LIT_REG.pattern,
-        {
-          I: INSTRUCTIONS.MOV_LIT_REG.instruction,
-          R: this.register(REG[0]),
-          V: value,
-        }
-      );
+      const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
-      return [i2s(fullInstruction)];
+      const fullInstruction = convertToInstruction(pattern, {
+        R: this.register(REG[0])
+      });
+
+      return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
     }
 
     mem(ctx) {
       const { children } = ctx;
       const { HEX_VALUE, REG } = children;
 
-      const fullInstruction = convertToInstruction(
-        INSTRUCTIONS.MOV_REG_MEM.pattern,
-        {
-          I: INSTRUCTIONS.MOV_REG_MEM.instruction,
-          R: this.register(REG[0]),
-        }
-      );
+      const { instruction, pattern } = INSTRUCTIONS.MOV_REG_MEM;
+
+      const fullInstruction = convertToInstruction(pattern, {
+        R: this.register(REG[0])
+      });
 
       const address = this.hex(HEX_VALUE[0]);
 
-      return [i2s(fullInstruction), i2s(address)];
+      return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
     }
 
     arithmetic(ctx) {
       const { children } = ctx;
       const { REG, ADD, SUB, DIV, MULT } = children;
+
+      const { instruction, pattern } = INSTRUCTIONS.ARITHMETIC;
 
       const opLookup = () => {
         if (ADD) return 0;
@@ -101,17 +99,13 @@ module.exports = parser => {
         if (MULT) return 3;
       };
 
-      const fullInstruction = convertToInstruction(
-        INSTRUCTIONS.ARITHMETIC.pattern,
-        {
-          I: INSTRUCTIONS.ARITHMETIC.instruction,
-          S: this.register(REG[0]),
-          T: this.register(REG[1]),
-          O: opLookup()
-        }
-      );
+      const fullInstruction = convertToInstruction(pattern, {
+        S: this.register(REG[0]),
+        T: this.register(REG[1]),
+        O: opLookup()
+      });
 
-      return [fullInstruction.toString(2).padStart(16, "0")];
+      return [i2s(instruction), i2s(fullInstruction)];
     }
 
     statement(ctx) {
@@ -121,8 +115,11 @@ module.exports = parser => {
     }
 
     program(ctx) {
-      const statements = ctx.statement.reduce((acc, statement) => [...acc, ...this.visit(statement)], []);
-      return [...statements, "0000000000000000"].join("\n");
+      const statements = ctx.statement.reduce(
+        (acc, statement) => [...acc, ...this.visit(statement)],
+        []
+      );
+      return [...statements, "0000000000000000"].join("");
     }
   }
 

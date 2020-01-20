@@ -5,40 +5,39 @@ module.exports = {
 
   MOV_LIT_REG: {
     instruction: 0x1,
-    mask: "VVVVVVVV00RRIIII",
+    mask: "000000RR",
     pattern: {
-      V: { P: 0xff00, S: 8 },
-      R: { P: 0x0030, S: 4 },
-      I: { P: 0x000f, S: 0 }
-    }
+      R: { P: 0x03, S: 0 }
+    },
+    tail: 16
   },
 
   MOV_REG_MEM: {
     instruction: 0x2,
-    mask: "0000000000RRIIII",
+    mask: "000000RR",
     pattern: {
-      R: { P: 0x0030, S: 4 },
-      I: { P: 0x000f, S: 0 }
-    }
+      R: { P: 0x03, S: 0 }
+    },
+    tail: 16
   },
 
   ARITHMETIC: {
     instruction: 0x4,
-    mask: "000000OOSSTTIIII",
+    mask: "00OOSSTT",
     pattern: {
-      O: { P: 0xff00, S: 8 },
-      S: { P: 0x00c0, S: 6 },
-      T: { P: 0x0030, S: 4 },
-      I: { P: 0x000f, S: 0 }
+      O: { P: 0x30, S: 4 },
+      S: { P: 0x0c, S: 2 },
+      T: { P: 0x03, S: 0 }
     }
   }
 };
 
 // Common masks
-// XXXXXXXX00000000 0xFF00
-// 00000000XX000000 0x00?0
-// 0000000000XX0000 0x0030
-// 000000000000XXXX 0x000F
+// XX000000 0xc0
+// 00XX0000 0x30
+// 0000XX00 0x0c
+// 000000XX 0x03
+// 0000XXXX 0x0F
 
 // 0000 0   0
 // 0001 1   1

@@ -41,8 +41,7 @@ class CPU {
   }
 
   printInstruction(instruction) {
-    return instruction.toString(2)
-        .padStart(16, "0")
+    return instruction.toString(2).padStart(16, "0");
   }
 
   getRegister(name) {
@@ -50,9 +49,15 @@ class CPU {
       throw new Error(`getRegister: Unable to find register ${name}`);
     }
 
-    if (this.debug) {
-      console.log({type: 'getRegister', name, value: this.registers.getUint16(this.registerMap[name]), regMem: this.registerMap[name], registers: this.registers})
-    }
+    // if (this.debug) {
+    //   console.log({
+    //     type: "getRegister",
+    //     name,
+    //     value: this.registers.getUint16(this.registerMap[name]),
+    //     regMem: this.registerMap[name],
+    //     registers: this.registers
+    //   });
+    // }
     return this.registers.getUint16(this.registerMap[name]);
   }
 
@@ -62,19 +67,45 @@ class CPU {
     }
     this.registers.setUint16(this.registerMap[name], value);
 
-    if (this.debug) {
-      console.log({type: 'setRegister', name, value, regMem: this.registerMap[name], registers: this.registers})
-    }
+    // if (this.debug) {
+    //   console.log({
+    //     type: "setRegister",
+    //     name,
+    //     value,
+    //     regMem: this.registerMap[name],
+    //     registers: this.registers
+    //   });
+    // }
 
     return;
   }
 
-  fetch16() {
+  fetch() {
     const nextInstructionAddress = this.getRegister("ip");
-    const instruction = this.memory.getUint16(nextInstructionAddress, true);
+    const instruction = this.memory.getUint8(nextInstructionAddress);
 
     if (this.debug) {
-      console.log({instruction, nextInstructionAddress, next: nextInstructionAddress +2 })
+      console.log({
+        instruction,
+        nextInstructionAddress,
+        next: nextInstructionAddress + 1
+      });
+    }
+
+    this.setRegister("ip", nextInstructionAddress + 1);
+    return instruction;
+  }
+
+  fetch16() {
+    const nextInstructionAddress = this.getRegister("ip");
+    const instruction = this.memory.getUint16(nextInstructionAddress);
+
+    if (this.debug) {
+      console.log({
+        instruction,
+        nextInstructionAddress,
+        next: nextInstructionAddress + 2
+      });
     }
 
     this.setRegister("ip", nextInstructionAddress + 2);
@@ -82,7 +113,7 @@ class CPU {
   }
 
   execute(command) {
-    const instruction = command & 15;
+    const instruction = command & 0x0f;
 
     switch (instruction) {
       case INSTRUCTIONS.TERMINATE.instruction: {
@@ -90,23 +121,43 @@ class CPU {
       }
 
       case INSTRUCTIONS.MOV_LIT_REG.instruction: {
-        const { V, R } = convertFromInstruction(
+        const options = this.fetch();
+
+        const { R } = convertFromInstruction(
           INSTRUCTIONS.MOV_LIT_REG.pattern,
-          command
+          options
         );
+        const V = this.fetch16();
+
+        if (this.debug) {
+          console.log({
+            type: "MOV_LIT_REG",
+            R,
+            V,
+            command: this.printInstruction(command),
+            pattern: INSTRUCTIONS.MOV_LIT_REG.mask
+          });
+        }
 
         this.registers.setUint16(R * 2, V);
         return;
       }
 
       case INSTRUCTIONS.MOV_REG_MEM.instruction: {
+        const options = this.fetch();
+
         const { R } = convertFromInstruction(
           INSTRUCTIONS.MOV_REG_MEM.pattern,
-          command
+          options
         );
-        
+
         if (this.debug) {
-          console.log({ type: "MOV_REG_MEM", R, command: this.printInstruction(command), pattern: INSTRUCTIONS.MOV_REG_MEM.mask });
+          console.log({
+            type: "MOV_REG_MEM",
+            R,
+            command: this.printInstruction(command),
+            pattern: INSTRUCTIONS.MOV_REG_MEM.mask
+          });
         }
 
         const v1 = this.registers.getUint16(R * 2);
@@ -117,15 +168,24 @@ class CPU {
       }
 
       case INSTRUCTIONS.ARITHMETIC.instruction: {
+        const options = this.fetch();
+
         const { S, T, O } = convertFromInstruction(
           INSTRUCTIONS.ARITHMETIC.pattern,
-          command
+          options
         );
         const v1 = this.registers.getUint16(S * 2);
         const v2 = this.registers.getUint16(T * 2);
 
         if (this.debug) {
-          console.log({ type:'ARITHMETIC', S, T, O, command: this.printInstruction(command), pattern: INSTRUCTIONS.ARITHMETIC.mask });
+          console.log({
+            type: "ARITHMETIC",
+            S,
+            T,
+            O,
+            command: this.printInstruction(command),
+            pattern: INSTRUCTIONS.ARITHMETIC.mask
+          });
         }
 
         switch (O) {
@@ -189,7 +249,7 @@ class CPU {
   }
 
   step() {
-    const instruction = this.fetch16();
+    const instruction = this.fetch();
     return this.execute(instruction);
   }
 
