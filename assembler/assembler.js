@@ -14,6 +14,7 @@ module.exports = async input => {
   const cst = parser.program();
 
   if (parser.errors && parser.errors.length) {
+    console.log(parser.errors);
     throw new Error("found errors in parser", parser.errors);
   }
 

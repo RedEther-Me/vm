@@ -17,6 +17,8 @@ const registerLookup = {
   r8: 9
 };
 
+const i2s = (instruction) => instruction.toString(2).padStart(16, "0");
+
 module.exports = parser => {
   const BaseAsmVisitor = parser.getBaseCstVisitorConstructor();
 
@@ -35,6 +37,19 @@ module.exports = parser => {
       return parseInt(ctx.image, 10);
     }
 
+    hex(ctx) {
+      return parseInt(ctx.image, 16);
+    }
+
+    hexOrLit(children) {
+      const { HEX_VALUE, LITERAL} = children;
+      if (HEX_VALUE) {
+        return this.hex(HEX_VALUE[0]);
+      }
+
+      return this.literal(LITERAL[0]);
+    }
+
     register(ctx) {
       const name = ctx.image;
       return registerLookup[name];
@@ -42,18 +57,37 @@ module.exports = parser => {
 
     mov(ctx) {
       const { children } = ctx;
-      const { LITERAL, REG } = children;
+      const { REG } = children;
+
+      const value = this.hexOrLit(children);
 
       const fullInstruction = convertToInstruction(
         INSTRUCTIONS.MOV_LIT_REG.pattern,
         {
           I: INSTRUCTIONS.MOV_LIT_REG.instruction,
           R: this.register(REG[0]),
-          V: this.literal(LITERAL[0])
+          V: value,
         }
       );
 
-      return fullInstruction.toString(2).padStart(16, "0");
+      return [i2s(fullInstruction)];
+    }
+
+    mem(ctx) {
+      const { children } = ctx;
+      const { HEX_VALUE, REG } = children;
+
+      const fullInstruction = convertToInstruction(
+        INSTRUCTIONS.MOV_REG_MEM.pattern,
+        {
+          I: INSTRUCTIONS.MOV_REG_MEM.instruction,
+          R: this.register(REG[0]),
+        }
+      );
+
+      const address = this.hex(HEX_VALUE[0]);
+
+      return [i2s(fullInstruction), i2s(address)];
     }
 
     arithmetic(ctx) {
@@ -77,7 +111,7 @@ module.exports = parser => {
         }
       );
 
-      return fullInstruction.toString(2).padStart(16, "0");
+      return [fullInstruction.toString(2).padStart(16, "0")];
     }
 
     statement(ctx) {
@@ -87,7 +121,7 @@ module.exports = parser => {
     }
 
     program(ctx) {
-      const statements = ctx.statement.map(statement => this.visit(statement));
+      const statements = ctx.statement.reduce((acc, statement) => [...acc, ...this.visit(statement)], []);
       return [...statements, "0000000000000000"].join("\n");
     }
   }

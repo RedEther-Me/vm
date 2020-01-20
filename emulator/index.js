@@ -4,6 +4,8 @@ const { readFileAsync } = require("../helpers");
 
 const createMemory = require("./memory");
 const CPU = require("./cpu");
+const MemoryController = require("./memory-controller");
+const createDisplayDevice = require("./display-controller");
 
 commander.option("-f, --file [file]", "executable file", "output.bin");
 
@@ -31,7 +33,11 @@ async function processFile() {
     // );
   });
 
-  const cpu = new CPU(memory);
+  const mm = new MemoryController();
+  mm.map('memory', memory, 0, 0xffff);
+  mm.map('display', createDisplayDevice(25), 0x3000, 0x30ff);
+
+  const cpu = new CPU(mm);
 
   cpu.run();
 }
