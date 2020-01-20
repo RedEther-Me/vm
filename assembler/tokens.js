@@ -11,6 +11,10 @@ const REGISTER = createToken({ name: "REG", pattern: /r[0-8]/ });
 
 const LITERAL = createToken({ name: "LITERAL", pattern: /[0-9]+/ });
 const HEX_VALUE = createToken({ name: "HEX_VALUE", pattern: /0x[0-9A-Fa-f]+/ });
+const CHAR = createToken({
+  name: "CHAR",
+  pattern: /\'[\\A-Za-z\'",.:;?!@#$%^&*(){}\[\] ]\'/
+});
 
 const WhiteSpace = createToken({
   name: "WhiteSpace",
@@ -27,5 +31,6 @@ module.exports = {
   TERM,
   REGISTER,
   HEX_VALUE,
+  CHAR,
   LITERAL
 };

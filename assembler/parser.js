@@ -16,7 +16,8 @@ class AsmParser extends CstParser {
       $.CONSUME(allTokens.MOV);
       $.OR([
         { ALT: () => $.CONSUME(allTokens.LITERAL) },
-        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) }
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.CHAR) }
       ]);
       $.CONSUME(allTokens.REGISTER);
     });

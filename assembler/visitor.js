@@ -42,10 +42,22 @@ module.exports = parser => {
       return parseInt(ctx.image, 16);
     }
 
-    hexOrLit(children) {
-      const { HEX_VALUE, LITERAL } = children;
+    char(ctx) {
+      if (ctx.image[1] === "\\") {
+        return ctx.image.charCodeAt(2);
+      }
+
+      return ctx.image.charCodeAt(1);
+    }
+
+    hexOrLitOrChar(children) {
+      const { HEX_VALUE, LITERAL, CHAR } = children;
       if (HEX_VALUE) {
         return this.hex(HEX_VALUE[0]);
+      }
+
+      if (CHAR) {
+        return this.char(CHAR[0]);
       }
 
       return this.literal(LITERAL[0]);
@@ -60,7 +72,7 @@ module.exports = parser => {
       const { children } = ctx;
       const { REG } = children;
 
-      const value = this.hexOrLit(children);
+      const value = this.hexOrLitOrChar(children);
 
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
