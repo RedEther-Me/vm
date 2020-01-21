@@ -15,24 +15,12 @@ async function processFile() {
   const file = await readFileAsync(commander.file);
 
   const memory = createMemory(256);
-  const wBytes = new Uint16Array(memory.buffer);
 
   const lines = file.match(/.{1,16}/g);
 
   lines.forEach((line, index) => {
     memory.setUint16(index * 2, parseInt(line, 2));
-    // console.log(
-    //   index,
-    //   line,
-    //   memory.getUint16(index * 2, true),
-    //   memory
-    //     .getUint16(index * 2, true)
-    //     .toString(2)
-    //     .padStart(16, "0")
-    // );
   });
-
-  console.log(memory);
 
   const mm = new MemoryController();
   mm.map("memory", memory, 0, 0xffff);
