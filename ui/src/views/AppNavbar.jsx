@@ -6,12 +6,10 @@ import {
   NavbarBrand,
   NavItem,
   Nav,
-  Button
+  Input
 } from "reactstrap";
 
 import { loadMedia } from "../machine/setup";
-import { readFileAsync } from "../helpers";
-import file from "../machine/output.bin";
 
 const AppNavbar = props => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,15 +24,23 @@ const AppNavbar = props => {
         <Collapse isOpen={isOpen} navbar>
           <Nav className="mr-auto" navbar>
             <NavItem>
-              <Button
-                onClick={async () => {
+              <Input
+                type="file"
+                name="file"
+                id="exampleFile"
+                onChange={evt => {
+                  const file = evt.target.files[0];
                   console.log(file);
-                  const test = readFileAsync(file);
-                  console.log(test);
+
+                  const reader = new FileReader();
+                  reader.onload = e => {
+                    const { result } = e.target;
+                    loadMedia(result);
+                  };
+
+                  reader.readAsText(file, "UTF-8");
                 }}
-              >
-                Load Media
-              </Button>
+              />
             </NavItem>
           </Nav>
         </Collapse>

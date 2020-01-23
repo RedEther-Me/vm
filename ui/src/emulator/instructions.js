@@ -1,28 +1,63 @@
 export default {
   TERMINATE: {
-    instruction: 0x0
+    instruction: 0x00
   },
 
   MOV_LIT_REG: {
-    instruction: 0x1,
+    instruction: 0x01,
     mask: "000000RR",
     pattern: {
       R: { P: 0x03, S: 0 }
-    },
-    tail: 16
+    }
   },
 
   MOV_REG_MEM: {
-    instruction: 0x2,
+    instruction: 0x02,
     mask: "000000RR",
     pattern: {
       R: { P: 0x03, S: 0 }
-    },
-    tail: 16
+    }
+  },
+
+  JMP_NOT_EQ: {
+    instruction: 0x11
+  },
+
+  CAL_LIT: {
+    instruction: 0x12
+  },
+
+  CAL_REG: {
+    instruction: 0x13,
+    pattern: {
+      R: { P: 0x03, S: 0 }
+    }
+  },
+
+  RET: {
+    instruction: 0x14
+  },
+
+  PSH_LIT: {
+    instruction: 0x21
+  },
+
+  PSH_REG: {
+    instruction: 0x22,
+    pattern: {
+      R: { P: 0x03, S: 0 }
+    }
+  },
+
+  POP: {
+    instruction: 0x23,
+    pattern: {
+      R: { P: 0x03, S: 0 }
+    }
   },
 
   ARITHMETIC: {
-    instruction: 0x4,
+    instruction: 0x54,
     mask: "00OOSSTT",
     pattern: {
       O: { P: 0x30, S: 4 },
