@@ -45,8 +45,21 @@ class AsmParser extends CstParser {
       ]);
     });
 
-    $.RULE("program", () => {
+    $.RULE("method", () => {
+      $.CONSUME(allTokens.LABEL);
       $.MANY(() => $.SUBRULE($.statement));
+    });
+
+    $.RULE("main", () => {
+      $.CONSUME(allTokens.MAIN);
+      $.MANY(() => $.SUBRULE($.statement));
+    });
+
+    $.RULE("program", () => {
+      $.OPTION(() => {
+        $.CONSUME(allTokens.DATA);
+      });
+      $.SUBRULE($.main);
       $.SUBRULE($.terminate);
     });
 

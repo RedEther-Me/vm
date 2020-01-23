@@ -4,6 +4,8 @@ const { convertToInstruction } = require("../helpers");
 
 const INSTRUCTIONS = require("../emulator/instructions");
 
+const postProcessor = require("./post-processor");
+
 const registerLookup = {
   ip: 0,
   acc: 1,
@@ -126,12 +128,31 @@ module.exports = parser => {
       return this[command](ctx[command][0]);
     }
 
-    program(ctx) {
+    method(ctx) {
+      return [];
+    }
+
+    main(ctx) {
       const statements = ctx.statement.reduce(
         (acc, statement) => [...acc, ...this.visit(statement)],
         []
       );
-      return [...statements, "0000000000000000"].join("");
+
+      return [{ type: "key", name: "main" }, ...statements];
+    }
+
+    terminate() {
+      return ["00000000"];
+    }
+
+    program(ctx) {
+      const main = this.visit(ctx.main);
+
+      const terminate = this.visit(ctx.terminate);
+
+      const preprocess = [...main, ...terminate];
+      const postprocess = postProcessor(preprocess);
+      return postprocess.join("");
     }
   }
 

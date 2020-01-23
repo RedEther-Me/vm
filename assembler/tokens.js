@@ -16,6 +16,17 @@ const CHAR = createToken({
   pattern: /\'[\\A-Za-z\'",.:;?!@#$%^&*(){}\[\] ]\'/
 });
 
+// tags
+const MAIN = createToken({ name: "MAIN", pattern: /main:/ });
+const DATA = createToken({ name: "DATA", pattern: /data:/ });
+const LABEL = createToken({ name: "LABEL", pattern: /[a-zA-Z]+[a-zA-Z0-9]*:/ });
+
+const COMMENT = createToken({
+  name: "COMMENT",
+  pattern: /##[.]*\n/,
+  group: Lexer.SKIPPED
+});
+
 const WhiteSpace = createToken({
   name: "WhiteSpace",
   pattern: /\s+/,
@@ -24,6 +35,7 @@ const WhiteSpace = createToken({
 
 module.exports = {
   WhiteSpace,
+  COMMENT,
   MOV,
   MEM,
   ADD,
@@ -32,5 +44,8 @@ module.exports = {
   REGISTER,
   HEX_VALUE,
   CHAR,
-  LITERAL
+  LITERAL,
+  MAIN,
+  DATA,
+  LABEL
 };

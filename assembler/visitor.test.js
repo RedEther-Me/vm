@@ -22,7 +22,7 @@ describe("convertToInstruction.js", () => {
         }
       });
 
-      expect(result).toEqual("0000000010110100");
+      expect(result).toEqual(["01010100", "00001011"]);
     });
 
     it("valid - sub", () => {
@@ -33,7 +33,7 @@ describe("convertToInstruction.js", () => {
         }
       });
 
-      expect(result).toEqual("0000000110110100");
+      expect(result).toEqual(["01010100", "00011011"]);
     });
 
     it("valid - mult", () => {
@@ -44,7 +44,7 @@ describe("convertToInstruction.js", () => {
         }
       });
 
-      expect(result).toEqual("0000001110110100");
+      expect(result).toEqual(["01010100", "00111011"]);
     });
 
     it("valid - div", () => {
@@ -55,7 +55,7 @@ describe("convertToInstruction.js", () => {
         }
       });
 
-      expect(result).toEqual("0000001010110100");
+      expect(result).toEqual(["01010100", "00101011"]);
     });
   });
 });
