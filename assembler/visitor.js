@@ -99,7 +99,23 @@ module.exports = parser => {
     }
 
     push(ctx) {
-      return [];
+      const { REG } = ctx.children;
+
+      if (REG) {
+        const { instruction, pattern } = INSTRUCTIONS.PSH_REG;
+
+        const fullInstruction = convertToInstruction(pattern, {
+          R: this.register(REG[0])
+        });
+
+        return [i2s(instruction), i2s(fullInstruction)];
+      }
+
+      const maybeValue = this.hexOrLitOrChar(ctx.children);
+
+      const { instruction } = INSTRUCTIONS.PSH_LIT;
+
+      return [i2s(instruction), i2s(maybeValue, 16)];
     }
 
     call(ctx) {
@@ -174,7 +190,7 @@ module.exports = parser => {
 
       const ret = this.ret(RET[0]);
 
-      return [label, ...statements, ret];
+      return [label, ...statements, ...ret];
     }
 
     main(ctx) {
