@@ -1,13 +1,13 @@
 const { Lexer } = require("chevrotain");
 
-const allTokens = require("./tokens");
+const { orderedTokens } = require("./tokens");
 const Parser = require("./parser");
 const createVisitor = require("./visitor");
 
 const parser = new Parser();
 
 module.exports = async input => {
-  const tokenizer = new Lexer(Object.values(allTokens));
+  const tokenizer = new Lexer(orderedTokens);
   const lexingResult = tokenizer.tokenize(input);
 
   parser.input = lexingResult.tokens;

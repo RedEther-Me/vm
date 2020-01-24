@@ -3,11 +3,18 @@ const { createToken, Lexer } = require("chevrotain");
 // commands
 const MOV = createToken({ name: "MOV", pattern: /MOV/ });
 const MEM = createToken({ name: "MEM", pattern: /MEM/ });
+
+const PUSH = createToken({ name: "PUSH", pattern: /PUSH/ });
+
+const CALL = createToken({ name: "CALL", pattern: /CALL/ });
+const RET = createToken({ name: "RET", pattern: /RET/ });
+
 const ADD = createToken({ name: "ADD", pattern: /ADD/ });
 const SUB = createToken({ name: "SUB", pattern: /SUB/ });
+
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
-const REGISTER = createToken({ name: "REG", pattern: /r[0-8]/ });
+const REG = createToken({ name: "REG", pattern: /r[0-8]/ });
 
 const LITERAL = createToken({ name: "LITERAL", pattern: /[0-9]+/ });
 const HEX_VALUE = createToken({ name: "HEX_VALUE", pattern: /0x[0-9A-Fa-f]+/ });
@@ -17,13 +24,14 @@ const CHAR = createToken({
 });
 
 // tags
-const MAIN = createToken({ name: "MAIN", pattern: /main:/ });
-const DATA = createToken({ name: "DATA", pattern: /data:/ });
-const LABEL = createToken({ name: "LABEL", pattern: /[a-zA-Z]+[a-zA-Z0-9]*:/ });
+const COLON = createToken({ name: "COLON", pattern: /:/ });
+const MAIN = createToken({ name: "MAIN", pattern: /main/ });
+const DATA = createToken({ name: "DATA", pattern: /data/ });
+const LABEL = createToken({ name: "LABEL", pattern: /[a-zA-Z]+[a-zA-Z0-9]*/ });
 
 const COMMENT = createToken({
   name: "COMMENT",
-  pattern: /##[.]*\n/,
+  pattern: /##.*/,
   group: Lexer.SKIPPED
 });
 
@@ -33,19 +41,31 @@ const WhiteSpace = createToken({
   group: Lexer.SKIPPED
 });
 
-module.exports = {
+const orderedTokens = [
   WhiteSpace,
   COMMENT,
   MOV,
   MEM,
+  PUSH,
+  CALL,
+  RET,
   ADD,
   SUB,
   TERM,
-  REGISTER,
+  REG,
   HEX_VALUE,
   CHAR,
   LITERAL,
+  COLON,
   MAIN,
   DATA,
   LABEL
+];
+
+module.exports = {
+  allTokens: orderedTokens.reduce(
+    (acc, item) => ({ ...acc, [item.name]: item }),
+    {}
+  ),
+  orderedTokens
 };

@@ -1,5 +1,3 @@
-const chalk = require("chalk");
-
 const { convertToInstruction } = require("../helpers");
 
 const INSTRUCTIONS = require("../emulator/instructions");
@@ -100,6 +98,38 @@ module.exports = parser => {
       return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
     }
 
+    push(ctx) {
+      return [];
+    }
+
+    call(ctx) {
+      const { REG, LABEL, HEX_VALUE } = ctx.children;
+
+      if (LABEL) {
+        const { instruction } = INSTRUCTIONS.CAL_LIT;
+        return [i2s(instruction), { type: "address", name: LABEL[0].image }];
+      }
+
+      if (HEX_VALUE) {
+        const { instruction } = INSTRUCTIONS.CAL_LIT;
+        return [i2s(instruction), i2s(this.hex(HEX_VALUE[0]), 16)];
+      }
+
+      const { instruction, pattern } = INSTRUCTIONS.CAL_REG;
+
+      const fullInstruction = convertToInstruction(pattern, {
+        R: this.register(REG[0])
+      });
+
+      return [i2s(instruction), i2s(fullInstruction)];
+    }
+
+    ret() {
+      const { instruction } = INSTRUCTIONS.RET;
+
+      return [i2s(instruction)];
+    }
+
     arithmetic(ctx) {
       const { children } = ctx;
       const { REG, ADD, SUB, DIV, MULT } = children;
@@ -128,12 +158,27 @@ module.exports = parser => {
       return this[command](ctx[command][0]);
     }
 
-    method(ctx) {
+    data() {
       return [];
     }
 
+    method(ctx) {
+      const { LABEL, RET } = ctx;
+
+      const label = { type: "key", name: LABEL[0].image };
+
+      const statements = (ctx.statement || []).reduce(
+        (acc, statement) => [...acc, ...this.visit(statement)],
+        []
+      );
+
+      const ret = this.ret(RET[0]);
+
+      return [label, ...statements, ret];
+    }
+
     main(ctx) {
-      const statements = ctx.statement.reduce(
+      const statements = (ctx.statement || []).reduce(
         (acc, statement) => [...acc, ...this.visit(statement)],
         []
       );
@@ -148,9 +193,12 @@ module.exports = parser => {
     program(ctx) {
       const main = this.visit(ctx.main);
 
-      const terminate = this.visit(ctx.terminate);
+      const methods = (ctx.method || []).reduce(
+        (acc, method) => [...acc, ...this.visit(method)],
+        []
+      );
 
-      const preprocess = [...main, ...terminate];
+      const preprocess = [...main, ...methods];
       const postprocess = postProcessor(preprocess);
       return postprocess.join("");
     }
