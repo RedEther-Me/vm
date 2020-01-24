@@ -17,7 +17,7 @@ const AppNavbar = props => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <div>
+    <div className="mb-4">
       <Navbar color="light" light expand="md">
         <NavbarBrand href="/">reactstrap</NavbarBrand>
         <NavbarToggler onClick={toggle} />

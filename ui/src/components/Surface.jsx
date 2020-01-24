@@ -5,6 +5,8 @@ import { machine } from "../machine/setup";
 const NUM_COLS = 80;
 const NUM_ROWS = 30;
 
+const color = "grey";
+
 const Surface = props => {
   const surfaceRef = useRef();
 
@@ -13,7 +15,8 @@ const Surface = props => {
       const { width, height } = surfaceRef.current;
 
       const ctx = surfaceRef.current.getContext("2d");
-      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, width, height);
     };
 
     const writeCharacter = ({ char = "", x = 0, y = 0 }) => {
@@ -24,6 +27,7 @@ const Surface = props => {
 
       const ctx = surfaceRef.current.getContext("2d");
       ctx.font = "17px Consolas";
+      ctx.fillStyle = "black";
       ctx.fillText(char, 25 + x * 9.4, 40 + y * 15);
     };
 
@@ -50,6 +54,7 @@ const Surface = props => {
       }
     };
 
+    clearScreen();
     machine.mm.map("display", displayDevice, 0x3000, 0x30ff);
   }, []);
 

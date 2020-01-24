@@ -30,21 +30,12 @@ class CPU {
       {}
     );
 
-    this.setRegister("sp", 0xffff - 1);
-    this.setRegister("fp", 0xffff - 1);
+    this.setRegisterByName("sp", 0xffff - 1);
+    this.setRegisterByName("fp", 0xffff - 1);
 
     this.stackFrameSize = 0;
-  }
 
-  debug() {
-    this.registerNames.forEach(name => {
-      console.log(
-        `${name}: 0x${this.getRegister(name)
-          .toString(16)
-          .padStart(4, "0")}`
-      );
-    });
-    console.log();
+    this.listeners = {};
   }
 
   printInstruction(instruction) {
@@ -59,11 +50,21 @@ class CPU {
     return this.registers.getUint16(this.registerMap[name]);
   }
 
-  setRegister(name, value) {
+  setRegisterByAddress(address, value) {
+    const findName = this.registerNames[
+      (address / 2) % this.registerNames.length
+    ];
+
+    this.setRegisterByName(findName, value);
+  }
+
+  setRegisterByName(name, value) {
     if (!(name in this.registerMap)) {
       throw new Error(`setRegister: Unable to find register ${name}`);
     }
     this.registers.setUint16(this.registerMap[name], value);
+
+    this.issueEvent({ type: "setRegister", register: name, value });
 
     return;
   }
@@ -72,7 +73,7 @@ class CPU {
     const nextInstructionAddress = this.getRegister("ip");
     const instruction = this.memory.getUint8(nextInstructionAddress);
 
-    this.setRegister("ip", nextInstructionAddress + 1);
+    this.setRegisterByName("ip", nextInstructionAddress + 1);
     return instruction;
   }
 
@@ -80,20 +81,20 @@ class CPU {
     const nextInstructionAddress = this.getRegister("ip");
     const instruction = this.memory.getUint16(nextInstructionAddress);
 
-    this.setRegister("ip", nextInstructionAddress + 2);
+    this.setRegisterByName("ip", nextInstructionAddress + 2);
     return instruction;
   }
 
   push(value) {
     const spAddress = this.getRegister("sp");
     this.memory.setUint16(spAddress, value);
-    this.setRegister("sp", spAddress - 2);
+    this.setRegisterByName("sp", spAddress - 2);
     this.stackFrameSize += 2;
   }
 
   pop() {
     const nextSpAddress = this.getRegister("sp") + 2;
-    this.setRegister("sp", nextSpAddress);
+    this.setRegisterByName("sp", nextSpAddress);
     this.stackFrameSize -= 2;
     return this.memory.getUint16(nextSpAddress);
   }
@@ -110,33 +111,33 @@ class CPU {
     this.push(this.getRegister("ip"));
     this.push(this.stackFrameSize + 2);
 
-    this.setRegister("fp", this.getRegister("sp"));
+    this.setRegisterByName("fp", this.getRegister("sp"));
     this.stackFrameSize = 0;
   }
 
   popState() {
     const framePointerAddress = this.getRegister("fp");
-    this.setRegister("sp", framePointerAddress);
+    this.setRegisterByName("sp", framePointerAddress);
 
     this.stackFrameSize = this.pop();
     const stackFrameSize = this.stackFrameSize;
 
-    this.setRegister("ip", this.pop());
-    this.setRegister("r8", this.pop());
-    this.setRegister("r7", this.pop());
-    this.setRegister("r6", this.pop());
-    this.setRegister("r5", this.pop());
-    this.setRegister("r4", this.pop());
-    this.setRegister("r3", this.pop());
-    this.setRegister("r2", this.pop());
-    this.setRegister("r1", this.pop());
+    this.setRegisterByName("ip", this.pop());
+    this.setRegisterByName("r8", this.pop());
+    this.setRegisterByName("r7", this.pop());
+    this.setRegisterByName("r6", this.pop());
+    this.setRegisterByName("r5", this.pop());
+    this.setRegisterByName("r4", this.pop());
+    this.setRegisterByName("r3", this.pop());
+    this.setRegisterByName("r2", this.pop());
+    this.setRegisterByName("r1", this.pop());
 
     const nArgs = this.pop();
     for (let i = 0; i < nArgs; i++) {
       this.pop();
     }
 
-    this.setRegister("fp", framePointerAddress + stackFrameSize);
+    this.setRegisterByName("fp", framePointerAddress + stackFrameSize);
   }
 
   execute(command) {
@@ -156,7 +157,7 @@ class CPU {
         );
         const V = this.fetch16();
 
-        this.registers.setUint16(R * 2, V);
+        this.setRegisterByAddress(R * 2, V);
         return;
       }
 
@@ -213,7 +214,7 @@ class CPU {
         const address = this.fetch16();
 
         if (value !== this.getRegister("acc")) {
-          this.setRegister("ip", address);
+          this.setRegisterByName("ip", address);
         }
 
         return;
@@ -255,7 +256,7 @@ class CPU {
       case INSTRUCTIONS.CAL_LIT.instruction: {
         const address = this.fetch16();
         this.pushState();
-        this.setRegister("ip", address);
+        this.setRegisterByName("ip", address);
         return;
       }
 
@@ -270,7 +271,7 @@ class CPU {
 
         const address = this.registers.getUint16(R);
         this.pushState();
-        this.setRegister("ip", address);
+        this.setRegisterByName("ip", address);
         return;
       }
 
@@ -299,6 +300,28 @@ class CPU {
     if (halt !== -1) {
       setImmediate(() => this.run());
     }
+  }
+
+  issueEvent(type) {
+    if (this.listeners) {
+      Object.values(this.listeners).forEach(listener => listener(type));
+    }
+  }
+
+  addListener(name, listener) {
+    this.listeners[`${name}`] = listener;
+
+    listener({
+      type: "initial",
+      ...this.registerNames.reduce(
+        (acc, reg) => ({ ...acc, [reg]: this.getRegister(reg) }),
+        {}
+      )
+    });
+  }
+
+  removeListener(name) {
+    delete this.listeners[`${name}`];
   }
 }
 

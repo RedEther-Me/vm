@@ -5,17 +5,17 @@ export default {
 
   MOV_LIT_REG: {
     instruction: 0x01,
-    mask: "000000RR",
+    mask: "0000RRRR",
     pattern: {
-      R: { P: 0x03, S: 0 }
+      R: { P: 0x0f, S: 0 }
     }
   },
 
   MOV_REG_MEM: {
     instruction: 0x02,
-    mask: "000000RR",
+    mask: "0000RRRR",
     pattern: {
-      R: { P: 0x03, S: 0 }
+      R: { P: 0x0f, S: 0 }
     }
   },
 
@@ -29,8 +29,9 @@ export default {
 
   CAL_REG: {
     instruction: 0x13,
+    mask: "0000RRRR",
     pattern: {
-      R: { P: 0x03, S: 0 }
+      R: { P: 0x0f, S: 0 }
     }
   },
 
@@ -44,15 +45,17 @@ export default {
 
   PSH_REG: {
     instruction: 0x22,
+    mask: "0000RRRR",
     pattern: {
-      R: { P: 0x03, S: 0 }
+      R: { P: 0x0f, S: 0 }
     }
   },
 
   POP: {
     instruction: 0x23,
+    mask: "0000RRRR",
     pattern: {
-      R: { P: 0x03, S: 0 }
+      R: { P: 0x0f, S: 0 }
     }
   },
 

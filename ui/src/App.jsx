@@ -1,16 +1,13 @@
 import React, { Fragment } from "react";
-import { Container } from "reactstrap";
 
 import AppNavbar from "./views/AppNavbar";
-import Surface from "./components/Surface";
+import RuntimeView from "./views/RuntimeView";
 
 function App() {
   return (
     <Fragment>
       <AppNavbar />
-      <Container>
-        <Surface width={100} height={100} />
-      </Container>
+      <RuntimeView />
     </Fragment>
   );
 }
