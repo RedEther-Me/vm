@@ -12,8 +12,6 @@ const RuntimeView = props => {
   const stackTop = memory.end - 1;
   const stackSize = registers.sp ? stackTop - registers.sp : 0;
 
-  console.log({ stackTop, stackSize });
-
   const stack = useMemo(() => {
     const arr = [];
 

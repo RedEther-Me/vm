@@ -69,6 +69,12 @@ class CPU {
     return;
   }
 
+  setMemoryByAddress(address, value) {
+    this.memory.setUint16(address, value);
+
+    this.issueEvent({ type: "setMemory", address, value });
+  }
+
   fetch() {
     const nextInstructionAddress = this.getRegister("ip");
     const instruction = this.memory.getUint8(nextInstructionAddress);
@@ -172,7 +178,7 @@ class CPU {
         const v1 = this.registers.getUint16(R * 2);
         const address = this.fetch16();
 
-        this.memory.setUint16(address, v1);
+        this.setMemoryByAddress(address, v1);
         return;
       }
 
@@ -248,7 +254,7 @@ class CPU {
         const { R } = convertFromInstruction(INSTRUCTIONS.POP.pattern, options);
 
         const value = this.pop();
-        this.registers.setUint16(R, value);
+        this.setRegisterByAddress(R, value);
         return;
       }
 

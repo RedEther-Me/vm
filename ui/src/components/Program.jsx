@@ -5,6 +5,7 @@ import { machine } from "../machine/setup";
 
 import RegisterTable from "./RegisterTable";
 import StackTable from "./StackTable";
+import MemoryTable from "./MemoryTable";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -79,6 +80,9 @@ function Program() {
         </Col>
       </Row>
       <Row>
+        <Col>
+          <MemoryTable {...{ registers }} />
+        </Col>
         <Col>
           <StackTable {...{ registers }} />
         </Col>
