@@ -30,12 +30,19 @@ class CPU {
       {}
     );
 
+    this.reset();
+
+    this.listeners = {};
+  }
+
+  reset() {
+    this.registerNames.forEach(register => this.setRegisterByName(register, 0));
     this.setRegisterByName("sp", 0xffff - 1);
     this.setRegisterByName("fp", 0xffff - 1);
 
     this.stackFrameSize = 0;
 
-    this.listeners = {};
+    this.issueEvent({ type: "reset" });
   }
 
   printInstruction(instruction) {
@@ -151,6 +158,7 @@ class CPU {
 
     switch (instruction) {
       case INSTRUCTIONS.TERMINATE.instruction: {
+        this.issueEvent({ type: "halt" });
         return -1;
       }
 

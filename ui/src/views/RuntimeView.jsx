@@ -3,6 +3,7 @@ import { Button, Col, Container, Row } from "reactstrap";
 
 import Surface from "../components/Surface";
 import Program from "../components/Program";
+import RunControls from "../components/RunControls";
 
 import { machine } from "../machine/setup";
 
@@ -11,23 +12,7 @@ const RuntimeView = props => {
     <Container fluid>
       <Row className="mb-2">
         <Col>
-          <Button
-            color="primary"
-            className="mr-1"
-            onClick={() => {
-              machine.cpu.step();
-            }}
-          >
-            Step
-          </Button>
-          <Button
-            color="danger"
-            onClick={() => {
-              machine.cpu.run();
-            }}
-          >
-            Run
-          </Button>
+          <RunControls />
         </Col>
       </Row>
       <Row>

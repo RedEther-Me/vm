@@ -10,6 +10,8 @@ export const loadMedia = file => {
   lines.forEach((line, index) => {
     machine.mm.setUint8(index, parseInt(line, 2));
   });
+
+  machine.cpu.reset();
 };
 
 // Initialize Machine
