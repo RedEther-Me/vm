@@ -5,10 +5,10 @@ import CPU from "../emulator/cpu";
 export let machine;
 
 export const loadMedia = file => {
-  const lines = file.match(/.{1,16}/g);
+  const lines = file.match(/.{1,8}/g);
 
   lines.forEach((line, index) => {
-    machine.mm.setUint16(index * 2, parseInt(line, 2));
+    machine.mm.setUint8(index, parseInt(line, 2));
   });
 };
 

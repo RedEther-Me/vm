@@ -261,6 +261,7 @@ class CPU {
       // Call literal
       case INSTRUCTIONS.CAL_LIT.instruction: {
         const address = this.fetch16();
+
         this.pushState();
         this.setRegisterByName("ip", address);
         return;

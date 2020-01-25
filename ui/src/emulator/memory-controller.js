@@ -45,6 +45,13 @@ class MemoryController {
     return region.device.getUint16(finalAddress);
   }
 
+  setUint8(address, value) {
+    const region = this.findRegion(address);
+    const finalAddress = region.remap ? address - region.start : address;
+
+    return region.device.setUint8(finalAddress, value);
+  }
+
   setUint16(address, value) {
     const region = this.findRegion(address);
     const finalAddress = region.remap ? address - region.start : address;
