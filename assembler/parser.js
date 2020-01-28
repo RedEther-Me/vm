@@ -8,67 +8,70 @@ class AsmParser extends CstParser {
 
     const $ = this;
 
+    $.RULE("reg_lit_hex_char", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.LITERAL) },
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.CHAR) }
+      ]);
+    });
+
+    $.RULE("lit_hex_char", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.LITERAL) },
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.CHAR) }
+      ]);
+    });
+
+    $.RULE("reg_hex", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.LITERAL) },
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.CHAR) }
+      ]);
+    });
+
     $.RULE("terminate", () => {
       $.CONSUME(allTokens.TERM);
     });
 
     $.RULE("mov", () => {
       $.CONSUME(allTokens.MOV);
-      $.OR([
-        { ALT: () => $.CONSUME(allTokens.LITERAL) },
-        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
-        { ALT: () => $.CONSUME(allTokens.CHAR) }
-      ]);
+      $.SUBRULE($.lit_hex_char);
       $.CONSUME(allTokens.REG);
     });
 
     $.RULE("load", () => {
       $.CONSUME(allTokens.LOAD);
-      $.OR([
-        { ALT: () => $.CONSUME(allTokens.REG) },
-        { ALT: () => $.CONSUME1(allTokens.HEX_VALUE) }
-      ]);
+      $.SUBRULE($.reg_hex);
       $.CONSUME2(allTokens.REG);
     });
 
     $.RULE("store", () => {
       $.CONSUME(allTokens.STORE);
-      $.OR([
-        { ALT: () => $.CONSUME(allTokens.REG) },
-        { ALT: () => $.CONSUME(allTokens.LITERAL) },
-        { ALT: () => $.CONSUME1(allTokens.HEX_VALUE) },
-        { ALT: () => $.CONSUME(allTokens.CHAR) }
-      ]);
-      $.CONSUME2(allTokens.HEX_VALUE);
+      $.SUBRULE($.reg_lit_hex_char);
+      $.SUBRULE($.reg_hex);
     });
 
     $.RULE("copy", () => {
       $.CONSUME(allTokens.COPY);
-      $.OR1([
-        { ALT: () => $.CONSUME1(allTokens.REG) },
-        { ALT: () => $.CONSUME1(allTokens.HEX_VALUE) }
-      ]);
-      $.OR2([
-        { ALT: () => $.CONSUME2(allTokens.REG) },
-        { ALT: () => $.CONSUME2(allTokens.HEX_VALUE) }
-      ]);
+      $.SUBRULE1($.reg_hex);
+      $.SUBRULE2($.reg_hex);
     });
 
     $.RULE("push", () => {
       $.CONSUME(allTokens.PUSH);
-      $.OR([
-        { ALT: () => $.CONSUME(allTokens.LITERAL) },
-        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
-        { ALT: () => $.CONSUME(allTokens.CHAR) }
-      ]);
+      $.SUBRULE($.lit_hex_char);
     });
 
     $.RULE("call", () => {
       $.CONSUME(allTokens.CALL);
       $.OR([
         { ALT: () => $.CONSUME(allTokens.LABEL) },
-        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
-        { ALT: () => $.CONSUME(allTokens.REG) }
+        { ALT: () => $.SUBRULE2($.reg_hex) }
       ]);
     });
 

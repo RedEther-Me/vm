@@ -11,16 +11,33 @@ export default {
     }
   },
 
-  MOV_REG_MEM: {
-    instruction: 0x02,
-    mask: "0000RRRR",
+  STORE_REG_HEX: {
+    instruction: 0x30,
+    mask: "0000SSSS",
     pattern: {
-      R: { P: 0x0f, S: 0 }
+      S: { P: 0x0f, S: 0 }
     }
   },
 
-  MOV_LIT_MEM: {
-    instruction: 0x03
+  STORE_REG_REG: {
+    instruction: 0x31,
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  STORE_LIT_HEX: {
+    instruction: 0x32
+  },
+
+  STORE_LIT_REG: {
+    instruction: 0x33,
+    mask: "TTTT0000",
+    pattern: {
+      T: { P: 0xf0, S: 4 }
+    }
   },
 
   MOV_MEM_REG: {

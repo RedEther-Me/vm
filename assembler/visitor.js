@@ -50,6 +50,18 @@ module.exports = parser => {
       return ctx.image.charCodeAt(1);
     }
 
+    reg_lit_hex_char() {
+      return [];
+    }
+
+    lit_hex_char() {
+      return [];
+    }
+
+    reg_hex() {
+      return [];
+    }
+
     hexOrLitOrChar(children) {
       const { HEX_VALUE, LITERAL, CHAR } = children;
       if (HEX_VALUE) {
@@ -100,31 +112,48 @@ module.exports = parser => {
 
     store(ctx) {
       const { children } = ctx;
-      const { REG, HEX_VALUE } = children;
+      const { reg_lit_hex_char, reg_hex } = children;
 
-      if (REG && REG[0]) {
-        const { instruction, pattern } = INSTRUCTIONS.STORE_REG_HEX;
+      if (reg_hex[0].children.HEX_VALUE) {
+        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]);
 
-        const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(REG[0])
-        });
+        if (reg_lit_hex_char[0].children.REG) {
+          const { instruction, pattern } = INSTRUCTIONS.STORE_REG_HEX;
 
-        const address = this.hex(HEX_VALUE[0]);
+          const fullInstruction = convertToInstruction(pattern, {
+            S: this.register(reg_lit_hex_char[0].children.REG[0])
+          });
 
-        return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
+          return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
+        }
+
+        const { instruction } = INSTRUCTIONS.STORE_LIT_HEX;
+
+        const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
+
+        return [i2s(instruction), i2s(value, 16), i2s(address, 16)];
       }
 
-      const { LITERAL, CHAR } = children;
+      if (reg_lit_hex_char[0].children.REG) {
+        const { instruction, pattern } = INSTRUCTIONS.STORE_REG_REG;
 
-      const hasAltHex = HEX_VALUE.length > 1;
-      const ALT_HEX = hasAltHex ? [HEX_VALUE[0]] : undefined;
+        const fullInstruction = convertToInstruction(pattern, {
+          S: this.register(reg_lit_hex_char[0].children.REG[0]),
+          T: this.register(reg_hex[0].children.REG[0])
+        });
 
-      const { instruction } = INSTRUCTIONS.STORE_LIT_HEX;
-      const value = this.hexOrLitOrChar({ LITERAL, CHAR, HEX_VALUE: ALT_HEX });
+        return [i2s(instruction), i2s(fullInstruction)];
+      }
 
-      const address = this.hex(hasAltHex ? HEX_VALUE[1] : HEX_VALUE[0]);
+      const { instruction, pattern } = INSTRUCTIONS.STORE_LIT_REG;
 
-      return [i2s(instruction), i2s(value, 16), i2s(address, 16)];
+      const fullInstruction = convertToInstruction(pattern, {
+        T: this.register(reg_hex[0].children.REG[0])
+      });
+
+      const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
+
+      return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
     }
 
     copy(ctx) {

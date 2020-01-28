@@ -32,7 +32,7 @@ module.exports = {
     instruction: 0x32
   },
 
-  MEM_LIT_REG: {
+  STORE_LIT_REG: {
     instruction: 0x33,
     mask: "TTTT0000",
     pattern: {
