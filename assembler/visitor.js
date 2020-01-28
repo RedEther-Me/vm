@@ -88,9 +88,9 @@ module.exports = parser => {
 
     mov(ctx) {
       const { children } = ctx;
-      const { REG } = children;
+      const { REG, lit_hex_char } = children;
 
-      const value = this.hexOrLitOrChar(children);
+      const value = this.hexOrLitOrChar(lit_hex_char[0].children);
 
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
@@ -226,19 +226,19 @@ module.exports = parser => {
     }
 
     push(ctx) {
-      const { REG } = ctx.children;
+      const { lit_hex_char } = ctx.children;
 
-      if (REG) {
+      if (lit_hex_char[0].children.REG) {
         const { instruction, pattern } = INSTRUCTIONS.PSH_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          R: this.register(REG[0])
+          R: this.register(lit_hex_char[0].children.REG[0])
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const maybeValue = this.hexOrLitOrChar(ctx.children);
+      const maybeValue = this.hexOrLitOrChar(lit_hex_char[0].children);
 
       const { instruction } = INSTRUCTIONS.PSH_LIT;
 
@@ -246,12 +246,14 @@ module.exports = parser => {
     }
 
     call(ctx) {
-      const { REG, LABEL, HEX_VALUE } = ctx.children;
+      const { LABEL, reg_hex } = ctx.children;
 
       if (LABEL) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
         return [i2s(instruction), { type: "address", name: LABEL[0].image }];
       }
+
+      const { HEX_VALUE, REG } = reg_hex[0].children;
 
       if (HEX_VALUE) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
