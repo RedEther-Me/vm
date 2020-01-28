@@ -231,19 +231,18 @@ module.exports = parser => {
       const { children } = ctx;
       const { REG, ADD, SUB, DIV, MULT } = children;
 
-      const { instruction, pattern } = INSTRUCTIONS.ARITHMETIC;
-
       const opLookup = () => {
-        if (ADD) return 0;
-        if (SUB) return 1;
-        if (DIV) return 2;
-        if (MULT) return 3;
+        if (ADD) return INSTRUCTIONS.ARITH_ADD;
+        if (SUB) return INSTRUCTIONS.ARITH_SUB;
+        if (MULT) return INSTRUCTIONS.ARITH_MULT;
+        if (DIV) return INSTRUCTIONS.ARITH_DIV;
       };
+
+      const { instruction, pattern } = opLookup();
 
       const fullInstruction = convertToInstruction(pattern, {
         S: this.register(REG[0]),
-        T: this.register(REG[1]),
-        O: opLookup()
+        T: this.register(REG[1])
       });
 
       return [i2s(instruction), i2s(fullInstruction)];

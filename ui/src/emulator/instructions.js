@@ -100,13 +100,39 @@ export default {
     }
   },
 
-  ARITHMETIC: {
+  ARITH_ADD: {
     instruction: 0x54,
-    mask: "00OOSSTT",
+    mask: "TTTTSSSS",
     pattern: {
-      O: { P: 0x30, S: 4 },
-      S: { P: 0x0c, S: 2 },
-      T: { P: 0x03, S: 0 }
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  ARITH_SUB: {
+    instruction: 0x55,
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  ARITH_MULT: {
+    instruction: 0x56,
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  ARITH_DIV: {
+    instruction: 0x57,
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
     }
   }
 };

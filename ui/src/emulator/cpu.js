@@ -278,31 +278,34 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.ARITHMETIC.instruction: {
+      case INSTRUCTIONS.ARITH_ADD.instruction:
+      case INSTRUCTIONS.ARITH_SUB.instruction:
+      case INSTRUCTIONS.ARITH_MULT.instruction:
+      case INSTRUCTIONS.ARITH_DIV.instruction: {
         const options = this.fetch();
 
-        const { S, T, O } = convertFromInstruction(
-          INSTRUCTIONS.ARITHMETIC.pattern,
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.ARITH_ADD.pattern,
           options
         );
         const v1 = this.registers.getUint16(S * 2);
         const v2 = this.registers.getUint16(T * 2);
 
-        switch (O) {
-          case 0x0: {
+        switch (instruction) {
+          case INSTRUCTIONS.ARITH_ADD.instruction: {
             this.registers.setUint16(T * 2, v1 + v2);
             return;
           }
-          case 0x1: {
+          case INSTRUCTIONS.ARITH_SUB.instruction: {
             this.registers.setUint16(T * 2, v1 - v2);
             return;
           }
-          case 0x2: {
-            this.registers.setUint16(T * 2, v1 / v2);
+          case INSTRUCTIONS.ARITH_MULT.instruction: {
+            this.registers.setUint16(T * 2, v1 * v2);
             return;
           }
-          case 0x3: {
-            this.registers.setUint16(T * 2, v1 * v2);
+          case INSTRUCTIONS.ARITH_DIV.instruction: {
+            this.registers.setUint16(T * 2, v1 / v2);
             return;
           }
           default:
