@@ -22,10 +22,27 @@ class AsmParser extends CstParser {
       $.CONSUME(allTokens.REG);
     });
 
-    $.RULE("mem", () => {
-      $.CONSUME(allTokens.MEM);
+    $.RULE("load", () => {
+      $.CONSUME(allTokens.LOAD);
       $.CONSUME(allTokens.HEX_VALUE);
       $.CONSUME(allTokens.REG);
+    });
+
+    $.RULE("store", () => {
+      $.CONSUME(allTokens.STORE);
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.LITERAL) },
+        { ALT: () => $.CONSUME1(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.CHAR) }
+      ]);
+      $.CONSUME2(allTokens.HEX_VALUE);
+    });
+
+    $.RULE("copy", () => {
+      $.CONSUME(allTokens.COPY);
+      $.CONSUME1(allTokens.HEX_VALUE);
+      $.CONSUME2(allTokens.HEX_VALUE);
     });
 
     $.RULE("push", () => {
@@ -58,7 +75,9 @@ class AsmParser extends CstParser {
     $.RULE("statement", () => {
       $.OR([
         { ALT: () => $.SUBRULE($.mov) },
-        { ALT: () => $.SUBRULE($.mem) },
+        { ALT: () => $.SUBRULE($.load) },
+        { ALT: () => $.SUBRULE($.store) },
+        { ALT: () => $.SUBRULE($.copy) },
         { ALT: () => $.SUBRULE($.push) },
         { ALT: () => $.SUBRULE($.call) },
         { ALT: () => $.SUBRULE($.arithmetic) },

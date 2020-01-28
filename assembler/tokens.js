@@ -2,7 +2,10 @@ const { createToken, Lexer } = require("chevrotain");
 
 // commands
 const MOV = createToken({ name: "MOV", pattern: /MOV/ });
-const MEM = createToken({ name: "MEM", pattern: /MEM/ });
+
+const LOAD = createToken({ name: "LOAD", pattern: /LOAD/ });
+const STORE = createToken({ name: "STORE", pattern: /STORE/ });
+const COPY = createToken({ name: "COPY", pattern: /COPY/ });
 
 const PUSH = createToken({ name: "PUSH", pattern: /PUSH/ });
 
@@ -45,7 +48,9 @@ const orderedTokens = [
   WhiteSpace,
   COMMENT,
   MOV,
-  MEM,
+  LOAD,
+  STORE,
+  COPY,
   PUSH,
   CALL,
   RET,

@@ -19,6 +19,10 @@ module.exports = {
     }
   },
 
+  MOV_LIT_MEM: {
+    instruction: 0x03
+  },
+
   JMP_NOT_EQ: {
     instruction: 0x11
   },

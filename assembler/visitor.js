@@ -83,19 +83,34 @@ module.exports = parser => {
       return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
     }
 
-    mem(ctx) {
+    load(ctx) {
+      return [];
+    }
+
+    store(ctx) {
       const { children } = ctx;
       const { HEX_VALUE, REG } = children;
 
-      const { instruction, pattern } = INSTRUCTIONS.MOV_REG_MEM;
+      if (REG && REG[0]) {
+        const { instruction, pattern } = INSTRUCTIONS.MOV_REG_MEM;
 
-      const fullInstruction = convertToInstruction(pattern, {
-        R: this.register(REG[0])
-      });
+        const fullInstruction = convertToInstruction(pattern, {
+          R: this.register(REG[0])
+        });
 
-      const address = this.hex(HEX_VALUE[0]);
+        const address = this.hex(HEX_VALUE[0]);
 
-      return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
+        return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
+      }
+
+      const { instruction } = INSTRUCTIONS.MOV_LIT_MEM;
+      const value = this.hexOrLitOrChar(children);
+
+      return [i2s(instruction), i2s(value, 16), i2s(address, 16)];
+    }
+
+    copy(ctx) {
+      return [];
     }
 
     push(ctx) {
@@ -215,6 +230,7 @@ module.exports = parser => {
       );
 
       const preprocess = [...main, ...methods];
+      console.log(preprocess);
       const postprocess = postProcessor(preprocess);
       return postprocess.join("");
     }

@@ -29,12 +29,16 @@ main:
 
   TERM
 
+## ##########################
+## Library Functions
+##   This library assumes that the memory point 0x7000 to 0x8000 is restricted
+## ##########################
+
 ## Clear Screen
 clearScreen:
   MOV 0xFF00 r4
   MEM 0x3000 r4
   RET
-
 
 ## Print X Characters from memory location
 print:
