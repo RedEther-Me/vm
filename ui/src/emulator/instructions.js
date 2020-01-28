@@ -31,8 +31,33 @@ export default {
     }
   },
 
-  MOV_COPY_MEM: {
+  COPY_MEM_HEX_HEX: {
     instruction: 0x05
+  },
+
+  COPY_MEM_REG_REG: {
+    instruction: 0x06,
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  COPY_MEM_REG_HEX: {
+    instruction: 0x07,
+    mask: "0000SSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 }
+    }
+  },
+
+  COPY_MEM_HEX_REG: {
+    instruction: 0x08,
+    mask: "TTTT0000",
+    pattern: {
+      T: { P: 0xf0, S: 4 }
+    }
   },
 
   JMP_NOT_EQ: {

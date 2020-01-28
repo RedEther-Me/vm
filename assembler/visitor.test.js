@@ -98,6 +98,38 @@ describe("convertToInstruction.js", () => {
           "0011000000000001"
         ]);
       });
+
+      it("COPY r3 r4", () => {
+        const result = tester.copy({
+          children: {
+            REG: [{ image: "r3" }, { image: "r4" }]
+          }
+        });
+
+        expect(result).toEqual(["00000110", "01010100"]);
+      });
+
+      it("COPY r4 0x3001", () => {
+        const result = tester.copy({
+          children: {
+            REG: [{ image: "r4", startOffset: 0 }],
+            HEX_VALUE: [{ image: "0x3001", startOffset: 1 }]
+          }
+        });
+
+        expect(result).toEqual(["00000111", "00000101", "0011000000000001"]);
+      });
+
+      it("COPY 0x3000 r4", () => {
+        const result = tester.copy({
+          children: {
+            REG: [{ image: "r4", startOffset: 1 }],
+            HEX_VALUE: [{ image: "0x3000", startOffset: 0 }]
+          }
+        });
+
+        expect(result).toEqual(["00001000", "01010000", "0011000000000000"]);
+      });
     });
   });
 

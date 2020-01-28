@@ -24,8 +24,11 @@ class AsmParser extends CstParser {
 
     $.RULE("load", () => {
       $.CONSUME(allTokens.LOAD);
-      $.CONSUME(allTokens.HEX_VALUE);
-      $.CONSUME(allTokens.REG);
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME1(allTokens.HEX_VALUE) }
+      ]);
+      $.CONSUME2(allTokens.REG);
     });
 
     $.RULE("store", () => {
@@ -41,8 +44,14 @@ class AsmParser extends CstParser {
 
     $.RULE("copy", () => {
       $.CONSUME(allTokens.COPY);
-      $.CONSUME1(allTokens.HEX_VALUE);
-      $.CONSUME2(allTokens.HEX_VALUE);
+      $.OR1([
+        { ALT: () => $.CONSUME1(allTokens.REG) },
+        { ALT: () => $.CONSUME1(allTokens.HEX_VALUE) }
+      ]);
+      $.OR2([
+        { ALT: () => $.CONSUME2(allTokens.REG) },
+        { ALT: () => $.CONSUME2(allTokens.HEX_VALUE) }
+      ]);
     });
 
     $.RULE("push", () => {

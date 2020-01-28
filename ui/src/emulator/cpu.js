@@ -49,6 +49,10 @@ class CPU {
     return instruction.toString(2).padStart(16, "0");
   }
 
+  getRegisterByAddress(address) {
+    return this.registers.getUint16(address);
+  }
+
   getRegister(name) {
     if (!(name in this.registerMap)) {
       throw new Error(`getRegister: Unable to find register ${name}`);
@@ -217,9 +221,57 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.MOV_COPY_MEM.instruction: {
+      case INSTRUCTIONS.COPY_MEM_HEX_HEX.instruction: {
         const from = this.fetch16();
         const to = this.fetch16();
+
+        const value = this.getMemoryByAddress(from);
+        this.setMemoryByAddress(to, value);
+        return;
+      }
+
+      case INSTRUCTIONS.COPY_MEM_REG_REG.instruction: {
+        const options = this.fetch();
+
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.COPY_MEM_REG_REG.pattern,
+          options
+        );
+
+        const from = this.getRegisterByAddress(S * 2);
+        const to = this.getRegisterByAddress(T * 2);
+
+        const value = this.getMemoryByAddress(from);
+        this.setMemoryByAddress(to, value);
+        return;
+      }
+
+      case INSTRUCTIONS.COPY_MEM_REG_HEX.instruction: {
+        const options = this.fetch();
+
+        const { S } = convertFromInstruction(
+          INSTRUCTIONS.COPY_MEM_REG_HEX.pattern,
+          options
+        );
+
+        const from = this.getRegisterByAddress(S * 2);
+        const to = this.fetch16();
+
+        const value = this.getMemoryByAddress(from);
+        this.setMemoryByAddress(to, value);
+        return;
+      }
+
+      case INSTRUCTIONS.COPY_MEM_HEX_REG.instruction: {
+        const options = this.fetch();
+
+        const { T } = convertFromInstruction(
+          INSTRUCTIONS.COPY_MEM_HEX_REG.pattern,
+          options
+        );
+
+        const from = this.fetch16();
+        const to = this.getRegisterByAddress(T * 2);
 
         const value = this.getMemoryByAddress(from);
         this.setMemoryByAddress(to, value);

@@ -129,14 +129,52 @@ module.exports = parser => {
 
     copy(ctx) {
       const { children } = ctx;
-      const { HEX_VALUE } = children;
+      const { REG, HEX_VALUE } = children;
 
-      const { instruction } = INSTRUCTIONS.MOV_COPY_MEM;
+      // Both are HEX
+      if (HEX_VALUE && HEX_VALUE.length > 1) {
+        const { instruction } = INSTRUCTIONS.COPY_MEM_HEX_HEX;
+
+        const from = this.hex(HEX_VALUE[0]);
+        const to = this.hex(HEX_VALUE[1]);
+
+        return [i2s(instruction), i2s(from, 16), i2s(to, 16)];
+      }
+
+      // Both are REG
+      if (REG.length > 1) {
+        const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_REG_REG;
+
+        const fullInstruction = convertToInstruction(pattern, {
+          S: this.register(REG[0]),
+          T: this.register(REG[1])
+        });
+
+        return [i2s(instruction), i2s(fullInstruction)];
+      }
+
+      const isRegBeforeHex = REG[0].startOffset < HEX_VALUE[0].startOffset;
+      if (isRegBeforeHex) {
+        const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_REG_HEX;
+
+        const fullInstruction = convertToInstruction(pattern, {
+          S: this.register(REG[0])
+        });
+
+        const to = this.hex(HEX_VALUE[0]);
+
+        return [i2s(instruction), i2s(fullInstruction), i2s(to, 16)];
+      }
+
+      const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_HEX_REG;
+
+      const fullInstruction = convertToInstruction(pattern, {
+        T: this.register(REG[0])
+      });
 
       const from = this.hex(HEX_VALUE[0]);
-      const to = this.hex(HEX_VALUE[1]);
 
-      return [i2s(instruction), i2s(from, 16), i2s(to, 16)];
+      return [i2s(instruction), i2s(fullInstruction), i2s(from, 16)];
     }
 
     push(ctx) {
@@ -177,6 +215,8 @@ module.exports = parser => {
       const fullInstruction = convertToInstruction(pattern, {
         R: this.register(REG[0])
       });
+
+      // TODO: Load arguments into registers 0-8
 
       return [i2s(instruction), i2s(fullInstruction)];
     }

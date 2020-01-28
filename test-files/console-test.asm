@@ -20,7 +20,7 @@ main:
   PUSH 0x1001
   PUSH 12
   PUSH 1
-  CALL print
+  CALL println
 
   ## Call Print Number
   PUSH 12345
@@ -38,12 +38,21 @@ main:
 clearScreen:
   MOV 0xFF00 r4
   STORE r4 0x3000
+  STORE 0 0x7000
   RET
 
 ## Print X Characters from memory location
-print:
+println:
+  ## ARG 0 => r0: Address of first character
+  ## ARG 1 => r1: Number of characters
+  LOAD 0x7000 r3        ## Load the next row to print to
   MOV 'H' r4
   STORE r4 0x3001
+
+  ## Increment the line counter
+  MOV 1 r4
+  ADD r4 r3
+  STORE r3 0x7000
   RET
 
 ## Print number as characters
