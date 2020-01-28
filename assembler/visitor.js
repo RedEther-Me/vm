@@ -128,7 +128,15 @@ module.exports = parser => {
     }
 
     copy(ctx) {
-      return [];
+      const { children } = ctx;
+      const { HEX_VALUE } = children;
+
+      const { instruction } = INSTRUCTIONS.MOV_COPY_MEM;
+
+      const from = this.hex(HEX_VALUE[0]);
+      const to = this.hex(HEX_VALUE[1]);
+
+      return [i2s(instruction), i2s(from, 16), i2s(to, 16)];
     }
 
     push(ctx) {

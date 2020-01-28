@@ -31,6 +31,10 @@ module.exports = {
     }
   },
 
+  MOV_COPY_MEM: {
+    instruction: 0x05
+  },
+
   JMP_NOT_EQ: {
     instruction: 0x11
   },

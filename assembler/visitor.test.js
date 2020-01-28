@@ -14,6 +14,19 @@ describe("convertToInstruction.js", () => {
   const tester = new TestClass();
 
   describe("memory", () => {
+    describe("load", () => {
+      it("LOAD 0x3000 r4", () => {
+        const result = tester.load({
+          children: {
+            REG: [{ image: "r4" }],
+            HEX_VALUE: [{ image: "0x3000" }]
+          }
+        });
+
+        expect(result).toEqual(["00000100", "00000101", "0011000000000000"]);
+      });
+    });
+
     describe("store", () => {
       it("STORE r4 0x3000", () => {
         const result = tester.store({
@@ -67,6 +80,22 @@ describe("convertToInstruction.js", () => {
           "00000011",
           "0000000001001000",
           "0011000000000000"
+        ]);
+      });
+    });
+
+    describe("copy", () => {
+      it("COPY 0x3000 0x3001", () => {
+        const result = tester.copy({
+          children: {
+            HEX_VALUE: [{ image: "0x3000" }, { image: "0x3001" }]
+          }
+        });
+
+        expect(result).toEqual([
+          "00000101",
+          "0011000000000000",
+          "0011000000000001"
         ]);
       });
     });
