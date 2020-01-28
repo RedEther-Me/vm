@@ -9,7 +9,7 @@ describe.only("postProcessor.js", () => {
 
     const result = postProcessor(program);
 
-    expect(result).toEqual(program.join(""));
+    expect(result).toEqual(program);
   });
 
   it("basic - only label", () => {
@@ -23,7 +23,7 @@ describe.only("postProcessor.js", () => {
 
     const result = postProcessor(program);
 
-    expect(result).toEqual([_8bits, _8bits, _8bits, _8bits].join(""));
+    expect(result).toEqual([_8bits, _8bits, _8bits, _8bits]);
   });
 
   it("basic - one address", () => {
@@ -38,9 +38,13 @@ describe.only("postProcessor.js", () => {
 
     const result = postProcessor(program);
 
-    expect(result).toEqual(
-      [_8bits, _8bits, _8bits, _8bits, "0000000000000010"].join("")
-    );
+    expect(result).toEqual([
+      _8bits,
+      _8bits,
+      _8bits,
+      _8bits,
+      "0000000000000010"
+    ]);
   });
 
   it("basic with 16 offset - one address", () => {
@@ -55,8 +59,12 @@ describe.only("postProcessor.js", () => {
 
     const result = postProcessor(program);
 
-    expect(result).toEqual(
-      [_8bits, _16bits, _8bits, _8bits, "0000000000000011"].join("")
-    );
+    expect(result).toEqual([
+      _8bits,
+      _16bits,
+      _8bits,
+      _8bits,
+      "0000000000000011"
+    ]);
   });
 });

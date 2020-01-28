@@ -23,6 +23,14 @@ module.exports = {
     instruction: 0x03
   },
 
+  MOV_MEM_REG: {
+    instruction: 0x04,
+    mask: "0000RRRR",
+    pattern: {
+      R: { P: 0x0f, S: 0 }
+    }
+  },
+
   JMP_NOT_EQ: {
     instruction: 0x11
   },
