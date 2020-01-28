@@ -23,6 +23,18 @@ export default {
     instruction: 0x03
   },
 
+  MOV_MEM_REG: {
+    instruction: 0x04,
+    mask: "0000RRRR",
+    pattern: {
+      R: { P: 0x0f, S: 0 }
+    }
+  },
+
+  MOV_COPY_MEM: {
+    instruction: 0x05
+  },
+
   JMP_NOT_EQ: {
     instruction: 0x11
   },

@@ -76,6 +76,10 @@ class CPU {
     return;
   }
 
+  getMemoryByAddress(address) {
+    return this.memory.getUint16(address);
+  }
+
   setMemoryByAddress(address, value) {
     this.memory.setUint16(address, value);
 
@@ -187,6 +191,38 @@ class CPU {
         const address = this.fetch16();
 
         this.setMemoryByAddress(address, v1);
+        return;
+      }
+
+      case INSTRUCTIONS.MOV_LIT_MEM.instruction: {
+        const value = this.fetch16();
+        const address = this.fetch16();
+
+        this.setMemoryByAddress(address, value);
+        return;
+      }
+
+      case INSTRUCTIONS.MOV_MEM_REG.instruction: {
+        const options = this.fetch();
+
+        const { R } = convertFromInstruction(
+          INSTRUCTIONS.MOV_REG_MEM.pattern,
+          options
+        );
+
+        const address = this.fetch16();
+
+        const value = this.getMemoryByAddress(address);
+        this.setRegisterByAddress(R * 2, value);
+        return;
+      }
+
+      case INSTRUCTIONS.MOV_COPY_MEM.instruction: {
+        const from = this.fetch16();
+        const to = this.fetch16();
+
+        const value = this.getMemoryByAddress(from);
+        this.setMemoryByAddress(to, value);
         return;
       }
 
