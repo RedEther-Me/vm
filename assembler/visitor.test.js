@@ -95,6 +95,65 @@ describe("convertToInstruction.js", () => {
           "0011000000000000"
         ]);
       });
+
+      it("STORE r4 r5", () => {
+        const result = tester.store({
+          children: {
+            REG: [{ image: "r4" }],
+            HEX_VALUE: [{ image: "r5" }]
+          }
+        });
+
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.STORE_REG_HEX),
+          "00000101",
+          "0011000000000000"
+        ]);
+      });
+
+      it("STORE 0x01 r5", () => {
+        const result = tester.store({
+          children: {
+            HEX_VALUE: [{ image: "0x01" }, { image: "r5" }]
+          }
+        });
+
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.STORE_LIT_HEX),
+          "0000000000000001",
+          "0011000000000000"
+        ]);
+      });
+
+      it("STORE 5 r5", () => {
+        const result = tester.store({
+          children: {
+            LITERAL: [{ image: "5" }],
+            HEX_VALUE: [{ image: "r5" }]
+          }
+        });
+
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.STORE_LIT_HEX),
+          "0000000000000101",
+          "0011000000000000"
+        ]);
+      });
+
+      it("STORE 'H' r5", () => {
+        const result = tester.store({
+          children: {
+            CHAR: [{ image: "'H'" }],
+            HEX_VALUE: [{ image: "r5" }]
+          }
+        });
+
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.STORE_LIT_HEX),
+          "0000000001001000",
+          "0011000000000000"
+        ]);
+      });
     });
 
     describe("copy", () => {
