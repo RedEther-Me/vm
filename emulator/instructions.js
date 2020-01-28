@@ -40,11 +40,20 @@ module.exports = {
     }
   },
 
-  MOV_MEM_REG: {
-    instruction: 0x04,
-    mask: "0000RRRR",
+  LOAD_REG: {
+    instruction: 0x40,
+    mask: "TTTTSSSS",
     pattern: {
-      R: { P: 0x0f, S: 0 }
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  LOAD_ADR: {
+    instruction: 0x41,
+    mask: "TTTT0000",
+    pattern: {
+      T: { P: 0xf0, S: 4 }
     }
   },
 

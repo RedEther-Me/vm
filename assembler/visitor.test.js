@@ -19,29 +19,64 @@ describe("convertToInstruction.js", () => {
   const tester = new TestClass();
 
   describe("memory", () => {
-    describe("load", () => {
+    describe.only("load", () => {
       it("LOAD 0x3000 r4", () => {
         const result = tester.load({
           children: {
             REG: [{ image: "r4" }],
-            HEX_VALUE: [{ image: "0x3000" }]
+            reg_hex: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3000" }]
+                }
+              }
+            ]
           }
         });
 
         expect(result).toEqual([
-          i2s(INSTRUCTIONS.MOV_MEM_REG),
-          "00000101",
+          i2s(INSTRUCTIONS.LOAD_ADR),
+          "01010000",
           "0011000000000000"
         ]);
       });
+
+      it("LOAD r3 r4", () => {
+        const result = tester.load({
+          children: {
+            REG: [{ image: "r4" }],
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r3" }]
+                }
+              }
+            ]
+          }
+        });
+
+        expect(result).toEqual([i2s(INSTRUCTIONS.LOAD_REG), "01010100"]);
+      });
     });
 
-    describe("store", () => {
+    describe.only("store", () => {
       it("STORE r4 0x3000", () => {
         const result = tester.store({
           children: {
-            REG: [{ image: "r4" }],
-            HEX_VALUE: [{ image: "0x3000" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  REG: [{ image: "r4" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3000" }]
+                }
+              }
+            ]
           }
         });
 
@@ -55,7 +90,20 @@ describe("convertToInstruction.js", () => {
       it("STORE 0x01 0x3000", () => {
         const result = tester.store({
           children: {
-            HEX_VALUE: [{ image: "0x01" }, { image: "0x3000" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x01" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3000" }]
+                }
+              }
+            ]
           }
         });
 
@@ -69,8 +117,20 @@ describe("convertToInstruction.js", () => {
       it("STORE 5 0x3000", () => {
         const result = tester.store({
           children: {
-            LITERAL: [{ image: "5" }],
-            HEX_VALUE: [{ image: "0x3000" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  LITERAL: [{ image: "5" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3000" }]
+                }
+              }
+            ]
           }
         });
 
@@ -84,8 +144,20 @@ describe("convertToInstruction.js", () => {
       it("STORE 'H' 0x3000", () => {
         const result = tester.store({
           children: {
-            CHAR: [{ image: "'H'" }],
-            HEX_VALUE: [{ image: "0x3000" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  CHAR: [{ image: "'H" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3000" }]
+                }
+              }
+            ]
           }
         });
 
@@ -99,73 +171,129 @@ describe("convertToInstruction.js", () => {
       it("STORE r4 r5", () => {
         const result = tester.store({
           children: {
-            REG: [{ image: "r4" }],
-            HEX_VALUE: [{ image: "r5" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  REG: [{ image: "r4" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r5" }]
+                }
+              }
+            ]
           }
         });
 
-        expect(result).toEqual([
-          i2s(INSTRUCTIONS.STORE_REG_HEX),
-          "00000101",
-          "0011000000000000"
-        ]);
+        expect(result).toEqual([i2s(INSTRUCTIONS.STORE_REG_REG), "01100101"]);
       });
 
       it("STORE 0x01 r5", () => {
         const result = tester.store({
           children: {
-            HEX_VALUE: [{ image: "0x01" }, { image: "r5" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x01" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r5" }]
+                }
+              }
+            ]
           }
         });
 
         expect(result).toEqual([
-          i2s(INSTRUCTIONS.STORE_LIT_HEX),
-          "0000000000000001",
-          "0011000000000000"
+          i2s(INSTRUCTIONS.STORE_LIT_REG),
+          "01100000",
+          "0000000000000001"
         ]);
       });
 
       it("STORE 5 r5", () => {
         const result = tester.store({
           children: {
-            LITERAL: [{ image: "5" }],
-            HEX_VALUE: [{ image: "r5" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  LITERAL: [{ image: "5" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r5" }]
+                }
+              }
+            ]
           }
         });
 
         expect(result).toEqual([
-          i2s(INSTRUCTIONS.STORE_LIT_HEX),
-          "0000000000000101",
-          "0011000000000000"
+          i2s(INSTRUCTIONS.STORE_LIT_REG),
+          "01100000",
+          "0000000000000101"
         ]);
       });
 
       it("STORE 'H' r5", () => {
         const result = tester.store({
           children: {
-            CHAR: [{ image: "'H'" }],
-            HEX_VALUE: [{ image: "r5" }]
+            reg_lit_hex_char: [
+              {
+                children: {
+                  CHAR: [{ image: "'H'" }]
+                }
+              }
+            ],
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r5" }]
+                }
+              }
+            ]
           }
         });
 
         expect(result).toEqual([
-          i2s(INSTRUCTIONS.STORE_LIT_HEX),
-          "0000000001001000",
-          "0011000000000000"
+          i2s(INSTRUCTIONS.STORE_LIT_REG),
+          "01100000",
+          "0000000001001000"
         ]);
       });
     });
 
-    describe("copy", () => {
+    describe.only("copy", () => {
       it("COPY 0x3000 0x3001", () => {
         const result = tester.copy({
           children: {
-            HEX_VALUE: [{ image: "0x3000" }, { image: "0x3001" }]
+            reg_hex: [
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3000" }]
+                }
+              },
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3001" }]
+                }
+              }
+            ]
           }
         });
 
         expect(result).toEqual([
-          "00000101",
+          i2s(INSTRUCTIONS.COPY_MEM_HEX_HEX),
           "0011000000000000",
           "0011000000000001"
         ]);
@@ -174,34 +302,75 @@ describe("convertToInstruction.js", () => {
       it("COPY r3 r4", () => {
         const result = tester.copy({
           children: {
-            REG: [{ image: "r3" }, { image: "r4" }]
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r3" }]
+                }
+              },
+              {
+                children: {
+                  REG: [{ image: "r4" }]
+                }
+              }
+            ]
           }
         });
 
-        expect(result).toEqual(["00000110", "01010100"]);
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.COPY_MEM_REG_REG),
+          "01010100"
+        ]);
       });
 
       it("COPY r4 0x3001", () => {
         const result = tester.copy({
           children: {
-            REG: [{ image: "r4", startOffset: 0 }],
-            HEX_VALUE: [{ image: "0x3001", startOffset: 1 }]
+            reg_hex: [
+              {
+                children: {
+                  REG: [{ image: "r4" }]
+                }
+              },
+              {
+                children: {
+                  HEX_VALUE: [{ image: "0x3001" }]
+                }
+              }
+            ]
           }
         });
 
-        expect(result).toEqual(["00000111", "00000101", "0011000000000001"]);
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.COPY_MEM_REG_HEX),
+          "00000101",
+          "0011000000000001"
+        ]);
       });
 
-      it("COPY 0x3000 r4", () => {
-        const result = tester.copy({
-          children: {
-            REG: [{ image: "r4", startOffset: 1 }],
-            HEX_VALUE: [{ image: "0x3000", startOffset: 0 }]
-          }
-        });
-
-        expect(result).toEqual(["00001000", "01010000", "0011000000000000"]);
+      it("COPY 0x3000 r4", () => {});
+      const result = tester.copy({
+        children: {
+          reg_hex: [
+            {
+              children: {
+                HEX_VALUE: [{ image: "0x3000" }]
+              }
+            },
+            {
+              children: {
+                REG: [{ image: "r4" }]
+              }
+            }
+          ]
+        }
       });
+
+      expect(result).toEqual([
+        i2s(INSTRUCTIONS.COPY_MEM_HEX_REG),
+        "01010000",
+        "0011000000000000"
+      ]);
     });
   });
 
