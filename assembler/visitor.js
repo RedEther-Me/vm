@@ -103,10 +103,10 @@ module.exports = parser => {
       const { REG, HEX_VALUE } = children;
 
       if (REG && REG[0]) {
-        const { instruction, pattern } = INSTRUCTIONS.MOV_REG_MEM;
+        const { instruction, pattern } = INSTRUCTIONS.STORE_REG_HEX;
 
         const fullInstruction = convertToInstruction(pattern, {
-          R: this.register(REG[0])
+          S: this.register(REG[0])
         });
 
         const address = this.hex(HEX_VALUE[0]);
@@ -119,7 +119,7 @@ module.exports = parser => {
       const hasAltHex = HEX_VALUE.length > 1;
       const ALT_HEX = hasAltHex ? [HEX_VALUE[0]] : undefined;
 
-      const { instruction } = INSTRUCTIONS.MOV_LIT_MEM;
+      const { instruction } = INSTRUCTIONS.STORE_LIT_HEX;
       const value = this.hexOrLitOrChar({ LITERAL, CHAR, HEX_VALUE: ALT_HEX });
 
       const address = this.hex(hasAltHex ? HEX_VALUE[1] : HEX_VALUE[0]);

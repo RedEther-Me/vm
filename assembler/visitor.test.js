@@ -1,5 +1,10 @@
 const generator = require("./visitor");
 
+const INSTRUCTIONS = require("../emulator/instructions");
+
+const i2s = (command, length = 8) =>
+  command.instruction.toString(2).padStart(length, "0");
+
 describe("convertToInstruction.js", () => {
   const TestClass = generator({
     getBaseCstVisitorConstructor: () => {
@@ -23,7 +28,11 @@ describe("convertToInstruction.js", () => {
           }
         });
 
-        expect(result).toEqual(["00000100", "00000101", "0011000000000000"]);
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.MOV_MEM_REG),
+          "00000101",
+          "0011000000000000"
+        ]);
       });
     });
 
@@ -36,7 +45,11 @@ describe("convertToInstruction.js", () => {
           }
         });
 
-        expect(result).toEqual(["00000010", "00000101", "0011000000000000"]);
+        expect(result).toEqual([
+          i2s(INSTRUCTIONS.STORE_REG_HEX),
+          "00000101",
+          "0011000000000000"
+        ]);
       });
 
       it("STORE 0x01 0x3000", () => {
@@ -47,7 +60,7 @@ describe("convertToInstruction.js", () => {
         });
 
         expect(result).toEqual([
-          "00000011",
+          i2s(INSTRUCTIONS.STORE_LIT_HEX),
           "0000000000000001",
           "0011000000000000"
         ]);
@@ -62,7 +75,7 @@ describe("convertToInstruction.js", () => {
         });
 
         expect(result).toEqual([
-          "00000011",
+          i2s(INSTRUCTIONS.STORE_LIT_HEX),
           "0000000000000101",
           "0011000000000000"
         ]);
@@ -77,7 +90,7 @@ describe("convertToInstruction.js", () => {
         });
 
         expect(result).toEqual([
-          "00000011",
+          i2s(INSTRUCTIONS.STORE_LIT_HEX),
           "0000000001001000",
           "0011000000000000"
         ]);

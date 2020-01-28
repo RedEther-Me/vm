@@ -75,7 +75,9 @@ class AsmParser extends CstParser {
     $.RULE("arithmetic", () => {
       $.OR([
         { ALT: () => $.CONSUME(allTokens.ADD) },
-        { ALT: () => $.CONSUME(allTokens.SUB) }
+        { ALT: () => $.CONSUME(allTokens.SUB) },
+        { ALT: () => $.CONSUME(allTokens.MULT) },
+        { ALT: () => $.CONSUME(allTokens.DIV) }
       ]);
       $.CONSUME1(allTokens.REG);
       $.CONSUME2(allTokens.REG);

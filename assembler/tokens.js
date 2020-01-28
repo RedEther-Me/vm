@@ -14,6 +14,8 @@ const RET = createToken({ name: "RET", pattern: /RET/ });
 
 const ADD = createToken({ name: "ADD", pattern: /ADD/ });
 const SUB = createToken({ name: "SUB", pattern: /SUB/ });
+const MULT = createToken({ name: "MULT", pattern: /MULT/ });
+const DIV = createToken({ name: "DIV", pattern: /DIV/ });
 
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
@@ -56,6 +58,8 @@ const orderedTokens = [
   RET,
   ADD,
   SUB,
+  MULT,
+  DIV,
   TERM,
   REG,
   HEX_VALUE,
