@@ -1,6 +1,6 @@
-const chalk = require("chalk");
+import chalk from "chalk";
 
-module.exports = function convertToInstruction(pattern, values) {
+export default function convertToInstruction(pattern, values) {
   const colorMap = {
     N: i => i,
     I: chalk.yellow,
@@ -35,4 +35,4 @@ module.exports = function convertToInstruction(pattern, values) {
   //   console.log(debug);
 
   return value;
-};
+}

@@ -8,7 +8,7 @@ const isTypeOf = (item, type) => {
 
 const countKey = "@@@@___count";
 
-module.exports = program => {
+export default program => {
   // Replace ADDRESS with values
 
   // build label map

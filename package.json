@@ -4,6 +4,7 @@
   "main": "index.js",
   "author": "Andrew Johnson <lordxuqra@gmail.com>",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "test": "jest"
   },

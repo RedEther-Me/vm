@@ -1,4 +1,4 @@
-const postProcessor = require("./post-processor");
+import postProcessor from "./post-processor.js";
 
 const _8bits = "00000000";
 const _16bits = "0000000000000000";

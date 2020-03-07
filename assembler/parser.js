@@ -1,6 +1,8 @@
-const { CstParser } = require("chevrotain");
+import chevrotain from "chevrotain";
 
-const { allTokens } = require("./tokens");
+import { allTokens } from "./tokens.js";
+
+const { CstParser } = chevrotain;
 
 class AsmParser extends CstParser {
   constructor() {
@@ -129,4 +131,4 @@ class AsmParser extends CstParser {
   }
 }
 
-module.exports = AsmParser;
+export default AsmParser;

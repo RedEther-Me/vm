@@ -1,19 +1,35 @@
-const commander = require("commander");
+import commander from "commander";
 
-const { readFileAsync, writeFileAsync } = require("../helpers");
+import { readFileAsync, writeFileAsync } from "../helpers/index.js";
 
-const assembler = require("./assembler");
+import assembler from "./assembler.js";
 
 commander
-  .option("-s, --source [file]", "asm source file")
-  .option("-o, --output [file].bin", "output binary file", "output.bin");
+  .option("-s, --source [file].asm", "asm source file")
+  .option("-o, --output [file].bin", "output binary file");
 
 commander.parse(process.argv);
 
+function outputName(source, output) {
+  if (output) {
+    return output;
+  }
+
+  const endsWithAsm = source.toUpperCase().indexOf(".ASM");
+  const base = endsWithAsm
+    ? source.substring(0, source.lastIndexOf("."))
+    : source;
+
+  return `${base}.bin`;
+}
+
 async function runner() {
-  const input = await readFileAsync(commander.source);
+  const { source, output } = commander;
+
+  const input = await readFileAsync(source);
   const result = await assembler(input);
-  await writeFileAsync(commander.output, result);
+
+  await writeFileAsync(outputName(source, output), result);
 }
 
 runner();

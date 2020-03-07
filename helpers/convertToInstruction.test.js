@@ -1,4 +1,4 @@
-const convertToInstruction = require("./convertToInstruction");
+import convertToInstruction from "./convertToInstruction";
 
 describe("convertToInstruction.js", () => {
   it("valid instruction set", () => {

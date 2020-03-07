@@ -1,11 +1,11 @@
-const commander = require("commander");
+import commander from "commander";
 
-const { readFileAsync } = require("../helpers");
+import { readFileAsync } from "../helpers";
 
-const createMemory = require("./memory");
-const CPU = require("./cpu");
-const MemoryController = require("./memory-controller");
-const createDisplayDevice = require("./display-controller");
+import createMemory from "./memory";
+import CPU from "./cpu";
+import MemoryController from "./memory-controller";
+import createDisplayDevice from "./display-controller";
 
 commander.option("-f, --file [file]", "executable file", "output.bin");
 

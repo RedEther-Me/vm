@@ -1,6 +1,6 @@
-const fs = require("fs");
+import fs from "fs";
 
-module.exports = function writeFileAsync(filename, data) {
+export default function writeFileAsync(filename, data) {
   return new Promise((resolve, reject) => {
     fs.writeFile(filename, data, err => {
       if (err) {
@@ -10,4 +10,4 @@ module.exports = function writeFileAsync(filename, data) {
       resolve();
     });
   });
-};
+}

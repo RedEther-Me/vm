@@ -1,12 +1,14 @@
-const { Lexer } = require("chevrotain");
+import chevrotain from "chevrotain";
 
-const { orderedTokens } = require("./tokens");
-const Parser = require("./parser");
-const createVisitor = require("./visitor");
+import { orderedTokens } from "./tokens.js";
+import Parser from "./parser.js";
+import createVisitor from "./visitor.js";
+
+const { Lexer } = chevrotain;
 
 const parser = new Parser();
 
-module.exports = async input => {
+export default async input => {
   const tokenizer = new Lexer(orderedTokens);
   const lexingResult = tokenizer.tokenize(input);
 

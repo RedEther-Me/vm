@@ -1,4 +1,4 @@
-module.exports = col => {
+export default col => {
   const eraseScreen = () => {
     process.stdout.write("\x1b[2J");
   };

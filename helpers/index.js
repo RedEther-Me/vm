@@ -1,12 +1,5 @@
-const readFileAsync = require("./readFileAsync");
-const writeFileAsync = require("./writeFileAsync");
+export { default as readFileAsync } from "./readFileAsync.js";
+export { default as writeFileAsync } from "./writeFileAsync.js";
 
-const convertToInstruction = require("./convertToInstruction");
-const convertFromInstruction = require("./convertFromInstruction");
-
-module.exports = {
-  readFileAsync,
-  writeFileAsync,
-  convertToInstruction,
-  convertFromInstruction
-};
+export { default as convertToInstruction } from "./convertToInstruction.js";
+export { default as convertFromInstruction } from "./convertFromInstruction.js";

@@ -1,4 +1,4 @@
-const convertFromInstruction = require("./convertFromInstruction");
+import convertFromInstruction from "./convertFromInstruction";
 
 describe("convertFromInstruction.js", () => {
   it("valid instruction set", () => {

@@ -1,8 +1,8 @@
-const { convertToInstruction } = require("../helpers");
+import { convertToInstruction } from "../helpers/index.js";
 
-const INSTRUCTIONS = require("../emulator/instructions");
+import INSTRUCTIONS from "../emulator/instructions.js";
 
-const postProcessor = require("./post-processor");
+import postProcessor from "./post-processor.js";
 
 const registerLookup = {
   ip: 0,
@@ -20,7 +20,7 @@ const registerLookup = {
 const i2s = (instruction, length = 8) =>
   instruction.toString(2).padStart(length, "0");
 
-module.exports = parser => {
+export default parser => {
   const BaseAsmVisitor = parser.getBaseCstVisitorConstructor();
 
   class myCustomVisitor extends BaseAsmVisitor {

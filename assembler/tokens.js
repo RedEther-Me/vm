@@ -1,4 +1,6 @@
-const { createToken, Lexer } = require("chevrotain");
+import chevrotain from "chevrotain";
+
+const { createToken, Lexer } = chevrotain;
 
 // commands
 const MOV = createToken({ name: "MOV", pattern: /MOV/ });
@@ -46,7 +48,7 @@ const WhiteSpace = createToken({
   group: Lexer.SKIPPED
 });
 
-const orderedTokens = [
+export const orderedTokens = [
   WhiteSpace,
   COMMENT,
   MOV,
@@ -71,10 +73,7 @@ const orderedTokens = [
   LABEL
 ];
 
-module.exports = {
-  allTokens: orderedTokens.reduce(
-    (acc, item) => ({ ...acc, [item.name]: item }),
-    {}
-  ),
-  orderedTokens
-};
+export const allTokens = orderedTokens.reduce(
+  (acc, item) => ({ ...acc, [item.name]: item }),
+  {}
+);

@@ -1,6 +1,6 @@
-const generator = require("./visitor");
+import generator from "./visitor";
 
-const INSTRUCTIONS = require("../emulator/instructions");
+import INSTRUCTIONS from "../emulator/instructions";
 
 const i2s = (command, length = 8) =>
   command.instruction.toString(2).padStart(length, "0");
