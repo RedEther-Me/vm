@@ -303,12 +303,15 @@ export default parser => {
       const opLookup = () => {
         if (isReg) {
           if (ADD) return INSTRUCTIONS.ARITH_ADD_REG;
-          if (SUB) return INSTRUCTIONS.ARITH_SUB;
+          if (SUB) return INSTRUCTIONS.ARITH_SUB_REG;
           if (MULT) return INSTRUCTIONS.ARITH_MULT;
           if (DIV) return INSTRUCTIONS.ARITH_DIV;
         }
 
         if (ADD) return INSTRUCTIONS.ARITH_ADD_LIT;
+        if (SUB) return INSTRUCTIONS.ARITH_SUB_LIT;
+        // if (MULT) return INSTRUCTIONS.ARITH_MULT;
+        // if (DIV) return INSTRUCTIONS.ARITH_DIV;
       };
 
       const { instruction, pattern } = opLookup();

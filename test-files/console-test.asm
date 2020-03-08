@@ -64,9 +64,11 @@ println:
   MULT r3 r7            ## MULTIPLY r3 (row) x r7 (row characters) => r7
   ADD r6 r7             ## ADD r6 (beginning of display) + r7 (row x row characters) => r7
   
-  ## MOV 'H' r4
-  ## STORE r4 r7           ## PRINT CHARACTER TO SCREEN
-  COPY r2 r7
+  COPY r2 r7            ## PRINT FIRST CHARACTER TO SCREEN
+  ADD 2 r2              ## Move to next character
+  ADD 1 r7              ## Move to next visual position
+  SUB 1 r1              ## Decrement characters left
+  COPY r2 r7            ## PRINT FIRST CHARACTER TO SCREEN
 
   ## Increment the line counter
   MOV 1 r4

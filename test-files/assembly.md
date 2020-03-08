@@ -51,3 +51,7 @@ TERM
 ```
 ADD value1[literal|register] register
 ```
+
+```
+SUB value1[literal|register] register
+```

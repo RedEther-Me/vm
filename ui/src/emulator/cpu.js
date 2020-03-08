@@ -361,7 +361,7 @@ class CPU {
       }
 
       case INSTRUCTIONS.ARITH_ADD_REG.instruction:
-      case INSTRUCTIONS.ARITH_SUB.instruction:
+      case INSTRUCTIONS.ARITH_SUB_REG.instruction:
       case INSTRUCTIONS.ARITH_MULT.instruction:
       case INSTRUCTIONS.ARITH_DIV.instruction: {
         const options = this.fetch();
@@ -379,7 +379,7 @@ class CPU {
             this.setRegisterByAddress(T * 2, v1 + v2);
             return;
           }
-          case INSTRUCTIONS.ARITH_SUB.instruction: {
+          case INSTRUCTIONS.ARITH_SUB_REG.instruction: {
             this.setRegisterByAddress(T * 2, v1 - v2);
             return;
           }
@@ -396,8 +396,8 @@ class CPU {
         }
       }
 
-      case INSTRUCTIONS.ARITH_ADD_LIT.instruction: {
-        // case INSTRUCTIONS.ARITH_SUB.instruction:
+      case INSTRUCTIONS.ARITH_ADD_LIT.instruction:
+      case INSTRUCTIONS.ARITH_SUB_LIT.instruction: {
         // case INSTRUCTIONS.ARITH_MULT.instruction:
         // case INSTRUCTIONS.ARITH_DIV.instruction: {
         const options = this.fetch();
@@ -415,10 +415,10 @@ class CPU {
             this.setRegisterByAddress(T * 2, v1 + v2);
             return;
           }
-          // case INSTRUCTIONS.ARITH_SUB.instruction: {
-          //   this.setRegisterByAddress(T * 2, v1 - v2);
-          //   return;
-          // }
+          case INSTRUCTIONS.ARITH_SUB_LIT.instruction: {
+            this.setRegisterByAddress(T * 2, v1 - v2);
+            return;
+          }
           // case INSTRUCTIONS.ARITH_MULT.instruction: {
           //   this.setRegisterByAddress(T * 2, v1 * v2);
           //   return;

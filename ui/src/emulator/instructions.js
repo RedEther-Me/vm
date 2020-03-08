@@ -27,7 +27,8 @@ const POP = "POP";
 
 const ARITH_ADD_REG = "ARITH_ADD_REG";
 const ARITH_ADD_LIT = "ARITH_ADD_LIT";
-const ARITH_SUB = "ARITH_SUB";
+const ARITH_SUB_REG = "ARITH_SUB_REG";
+const ARITH_SUB_LIT = "ARITH_SUB_LIT";
 const ARITH_MULT = "ARITH_MULT";
 const ARITH_DIV = "ARITH_DIV";
 
@@ -61,7 +62,8 @@ const instructions = {
 
   [ARITH_ADD_REG]: 0x60,
   [ARITH_ADD_LIT]: 0x61,
-  [ARITH_SUB]: 0x62,
+  [ARITH_SUB_REG]: 0x62,
+  [ARITH_SUB_LIT]: 0x63,
   [ARITH_MULT]: 0x64,
   [ARITH_DIV]: 0x66
 };
@@ -220,11 +222,19 @@ export default {
     }
   },
 
-  [ARITH_SUB]: {
-    instruction: instructions[ARITH_SUB],
+  [ARITH_SUB_REG]: {
+    instruction: instructions[ARITH_SUB_REG],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [ARITH_SUB_LIT]: {
+    instruction: instructions[ARITH_SUB_LIT],
+    mask: "TTTT0000",
+    pattern: {
       T: { P: 0xf0, S: 4 }
     }
   },
