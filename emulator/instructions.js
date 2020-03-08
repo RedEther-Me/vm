@@ -1,26 +1,90 @@
+const TERMINATE = "TERMINATE";
+
+const MOV_LIT_REG = "MOV_LIT_REG";
+
+const STORE_REG_HEX = "STORE_REG_HEX";
+const STORE_REG_REG = "STORE_REG_REG";
+const STORE_LIT_HEX = "STORE_LIT_HEX";
+const STORE_LIT_REG = "STORE_LIT_REG";
+
+const LOAD_ADR = "LOAD_ADR";
+const LOAD_REG = "LOAD_REG";
+
+const COPY_MEM_HEX_HEX = "COPY_MEM_HEX_HEX";
+const COPY_MEM_REG_REG = "COPY_MEM_REG_REG";
+const COPY_MEM_REG_HEX = "COPY_MEM_REG_HEX";
+const COPY_MEM_HEX_REG = "COPY_MEM_HEX_REG";
+
+const JMP_NOT_EQ = "JMP_NOT_EQ";
+const CAL_LIT = "CAL_LIT";
+const CAL_REG = "CAL_REG";
+const RET = "RET";
+
+const PSH_LIT = "PSH_LIT";
+const PSH_REG = "PSH_REG";
+const POP = "POP";
+
+const ARITH_ADD = "ARITH_ADD";
+const ARITH_SUB = "ARITH_SUB";
+const ARITH_MULT = "ARITH_MULT";
+const ARITH_DIV = "ARITH_DIV";
+
+const instructions = {
+  [TERMINATE]: 0x00,
+
+  [MOV_LIT_REG]: 0x01,
+
+  [JMP_NOT_EQ]: 0x10,
+  [CAL_LIT]: 0x11,
+  [CAL_REG]: 0x12,
+  [RET]: 0x13,
+
+  [PSH_LIT]: 0x21,
+  [PSH_REG]: 0x22,
+  [POP]: 0x23,
+
+  [STORE_REG_HEX]: 0x30,
+  [STORE_REG_REG]: 0x31,
+  [STORE_LIT_HEX]: 0x32,
+  [STORE_LIT_REG]: 0x33,
+
+  [LOAD_ADR]: 0x40,
+  [LOAD_REG]: 0x41,
+
+  [COPY_MEM_HEX_HEX]: 0x50,
+  [COPY_MEM_REG_REG]: 0x51,
+  [COPY_MEM_REG_HEX]: 0x52,
+  [COPY_MEM_HEX_REG]: 0x53,
+
+  [ARITH_ADD]: 0x60,
+  [ARITH_SUB]: 0x61,
+  [ARITH_MULT]: 0x62,
+  [ARITH_DIV]: 0x63
+};
+
 export default {
-  TERMINATE: {
-    instruction: 0x00
+  [TERMINATE]: {
+    instruction: instructions[TERMINATE]
   },
 
-  MOV_LIT_REG: {
-    instruction: 0x01,
+  [MOV_LIT_REG]: {
+    instruction: instructions[MOV_LIT_REG],
     mask: "0000RRRR",
     pattern: {
       R: { P: 0x0f, S: 0 }
     }
   },
 
-  STORE_REG_HEX: {
-    instruction: 0x30,
+  [STORE_REG_HEX]: {
+    instruction: instructions[STORE_REG_HEX],
     mask: "0000SSSS",
     pattern: {
       S: { P: 0x0f, S: 0 }
     }
   },
 
-  STORE_REG_REG: {
-    instruction: 0x31,
+  [STORE_REG_REG]: {
+    instruction: instructions[STORE_REG_REG],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
@@ -28,32 +92,28 @@ export default {
     }
   },
 
-  STORE_LIT_HEX: {
-    instruction: 0x32
+  [STORE_LIT_HEX]: {
+    instruction: instructions[STORE_LIT_HEX]
   },
 
-  STORE_LIT_REG: {
-    instruction: 0x33,
+  [STORE_LIT_REG]: {
+    instruction: instructions[STORE_LIT_REG],
     mask: "TTTT0000",
     pattern: {
       T: { P: 0xf0, S: 4 }
     }
   },
 
-  MOV_MEM_REG: {
-    instruction: 0x04,
-    mask: "0000RRRR",
+  [LOAD_ADR]: {
+    instruction: instructions[LOAD_ADR],
+    mask: "TTTT0000",
     pattern: {
-      R: { P: 0x0f, S: 0 }
+      T: { P: 0xf0, S: 4 }
     }
   },
 
-  COPY_MEM_HEX_HEX: {
-    instruction: 0x05
-  },
-
-  COPY_MEM_REG_REG: {
-    instruction: 0x06,
+  [LOAD_REG]: {
+    instruction: instructions[LOAD_REG],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
@@ -61,64 +121,77 @@ export default {
     }
   },
 
-  COPY_MEM_REG_HEX: {
-    instruction: 0x07,
+  [COPY_MEM_HEX_HEX]: {
+    instruction: instructions[COPY_MEM_HEX_HEX]
+  },
+
+  [COPY_MEM_REG_REG]: {
+    instruction: instructions[COPY_MEM_REG_REG],
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [COPY_MEM_REG_HEX]: {
+    instruction: instructions[COPY_MEM_REG_HEX],
     mask: "0000SSSS",
     pattern: {
       S: { P: 0x0f, S: 0 }
     }
   },
 
-  COPY_MEM_HEX_REG: {
-    instruction: 0x08,
+  [COPY_MEM_HEX_REG]: {
+    instruction: instructions[COPY_MEM_HEX_REG],
     mask: "TTTT0000",
     pattern: {
       T: { P: 0xf0, S: 4 }
     }
   },
 
-  JMP_NOT_EQ: {
-    instruction: 0x11
+  [JMP_NOT_EQ]: {
+    instruction: instructions[JMP_NOT_EQ]
   },
 
-  CAL_LIT: {
-    instruction: 0x12
+  [CAL_LIT]: {
+    instruction: instructions[CAL_LIT]
   },
 
-  CAL_REG: {
-    instruction: 0x13,
+  [CAL_REG]: {
+    instruction: instructions[CAL_REG],
     mask: "0000RRRR",
     pattern: {
       R: { P: 0x0f, S: 0 }
     }
   },
 
-  RET: {
-    instruction: 0x14
+  [RET]: {
+    instruction: instructions[RET]
   },
 
-  PSH_LIT: {
-    instruction: 0x21
+  [PSH_LIT]: {
+    instruction: instructions[PSH_LIT]
   },
 
-  PSH_REG: {
-    instruction: 0x22,
+  [PSH_REG]: {
+    instruction: instructions[PSH_REG],
     mask: "0000RRRR",
     pattern: {
       R: { P: 0x0f, S: 0 }
     }
   },
 
-  POP: {
-    instruction: 0x23,
+  [POP]: {
+    instruction: instructions[POP],
     mask: "0000RRRR",
     pattern: {
       R: { P: 0x0f, S: 0 }
     }
   },
 
-  ARITH_ADD: {
-    instruction: 0x54,
+  [ARITH_ADD]: {
+    instruction: instructions[ARITH_ADD],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
@@ -126,8 +199,8 @@ export default {
     }
   },
 
-  ARITH_SUB: {
-    instruction: 0x55,
+  [ARITH_SUB]: {
+    instruction: instructions[ARITH_SUB],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
@@ -135,8 +208,8 @@ export default {
     }
   },
 
-  ARITH_MULT: {
-    instruction: 0x56,
+  [ARITH_MULT]: {
+    instruction: instructions[ARITH_MULT],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
@@ -144,8 +217,8 @@ export default {
     }
   },
 
-  ARITH_DIV: {
-    instruction: 0x57,
+  [ARITH_DIV]: {
+    instruction: instructions[ARITH_DIV],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },

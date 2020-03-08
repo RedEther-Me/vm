@@ -183,22 +183,37 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.MOV_REG_MEM.instruction: {
+      case INSTRUCTIONS.STORE_REG_HEX.instruction: {
         const options = this.fetch();
 
-        const { R } = convertFromInstruction(
-          INSTRUCTIONS.MOV_REG_MEM.pattern,
+        const { S } = convertFromInstruction(
+          INSTRUCTIONS.STORE_REG_HEX.pattern,
           options
         );
 
-        const v1 = this.registers.getUint16(R * 2);
+        const v1 = this.registers.getUint16(S * 2);
         const address = this.fetch16();
 
         this.setMemoryByAddress(address, v1);
         return;
       }
 
-      case INSTRUCTIONS.MOV_LIT_MEM.instruction: {
+      case INSTRUCTIONS.STORE_REG_REG.instruction: {
+        const options = this.fetch();
+
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.STORE_REG_REG.pattern,
+          options
+        );
+
+        const v1 = this.registers.getUint16(S * 2);
+        const address = this.registers.getUint16(T * 2);
+
+        this.setMemoryByAddress(address, v1);
+        return;
+      }
+
+      case INSTRUCTIONS.STORE_LIT_HEX.instruction: {
         const value = this.fetch16();
         const address = this.fetch16();
 
@@ -206,18 +221,48 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.MOV_MEM_REG.instruction: {
+      case INSTRUCTIONS.STORE_LIT_REG.instruction: {
         const options = this.fetch();
 
-        const { R } = convertFromInstruction(
-          INSTRUCTIONS.MOV_REG_MEM.pattern,
+        const { T } = convertFromInstruction(
+          INSTRUCTIONS.STORE_LIT_REG.pattern,
+          options
+        );
+
+        const address = this.registers.getUint16(T * 2);
+        const v1 = this.fetch16();
+
+        this.setMemoryByAddress(address, v1);
+        return;
+      }
+
+      case INSTRUCTIONS.LOAD_ADR.instruction: {
+        const options = this.fetch();
+
+        const { T } = convertFromInstruction(
+          INSTRUCTIONS.LOAD_ADR.pattern,
           options
         );
 
         const address = this.fetch16();
 
         const value = this.getMemoryByAddress(address);
-        this.setRegisterByAddress(R * 2, value);
+        this.setRegisterByAddress(T * 2, value);
+        return;
+      }
+
+      case INSTRUCTIONS.LOAD_REG.instruction: {
+        const options = this.fetch();
+
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.LOAD_REG.pattern,
+          options
+        );
+
+        const address = this.registers.getUint16(S * 2);
+
+        const value = this.getMemoryByAddress(address);
+        this.setRegisterByAddress(T * 2, value);
         return;
       }
 
