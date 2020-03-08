@@ -1,6 +1,7 @@
 const TERMINATE = "TERMINATE";
 
 const MOV_LIT_REG = "MOV_LIT_REG";
+const MOV_REG_REG = "MOV_REG_REG";
 
 const STORE_REG_HEX = "STORE_REG_HEX";
 const STORE_REG_REG = "STORE_REG_REG";
@@ -24,7 +25,8 @@ const PSH_LIT = "PSH_LIT";
 const PSH_REG = "PSH_REG";
 const POP = "POP";
 
-const ARITH_ADD = "ARITH_ADD";
+const ARITH_ADD_REG = "ARITH_ADD_REG";
+const ARITH_ADD_LIT = "ARITH_ADD_LIT";
 const ARITH_SUB = "ARITH_SUB";
 const ARITH_MULT = "ARITH_MULT";
 const ARITH_DIV = "ARITH_DIV";
@@ -33,6 +35,7 @@ const instructions = {
   [TERMINATE]: 0x00,
 
   [MOV_LIT_REG]: 0x01,
+  [MOV_REG_REG]: 0x02,
 
   [JMP_NOT_EQ]: 0x10,
   [CAL_LIT]: 0x11,
@@ -56,10 +59,11 @@ const instructions = {
   [COPY_MEM_REG_HEX]: 0x52,
   [COPY_MEM_HEX_REG]: 0x53,
 
-  [ARITH_ADD]: 0x60,
-  [ARITH_SUB]: 0x61,
-  [ARITH_MULT]: 0x62,
-  [ARITH_DIV]: 0x63
+  [ARITH_ADD_REG]: 0x60,
+  [ARITH_ADD_LIT]: 0x61,
+  [ARITH_SUB]: 0x62,
+  [ARITH_MULT]: 0x64,
+  [ARITH_DIV]: 0x66
 };
 
 export default {
@@ -69,9 +73,18 @@ export default {
 
   [MOV_LIT_REG]: {
     instruction: instructions[MOV_LIT_REG],
-    mask: "0000RRRR",
+    mask: "TTTT0000",
     pattern: {
-      R: { P: 0x0f, S: 0 }
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [MOV_REG_REG]: {
+    instruction: instructions[MOV_REG_REG],
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
     }
   },
 
@@ -190,11 +203,19 @@ export default {
     }
   },
 
-  [ARITH_ADD]: {
-    instruction: instructions[ARITH_ADD],
+  [ARITH_ADD_REG]: {
+    instruction: instructions[ARITH_ADD_REG],
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [ARITH_ADD_LIT]: {
+    instruction: instructions[ARITH_ADD_LIT],
+    mask: "TTTT0000",
+    pattern: {
       T: { P: 0xf0, S: 4 }
     }
   },

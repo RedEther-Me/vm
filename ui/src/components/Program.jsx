@@ -14,7 +14,8 @@ const reducer = (state, action) => {
       const { type, ...registers } = action;
       return {
         ...state,
-        ...registers
+        ...registers,
+        id: state.id + 1
       };
     }
     case "setRegister": {
@@ -30,7 +31,7 @@ const reducer = (state, action) => {
 };
 
 function Program() {
-  const [registers, dispatch] = useReducer(reducer, {});
+  const [registers, dispatch] = useReducer(reducer, { id: 0 });
 
   useEffect(() => {
     machine.cpu.addListener("program", dispatch);

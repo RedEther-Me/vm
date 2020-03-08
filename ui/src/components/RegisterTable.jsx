@@ -17,7 +17,12 @@ const RuntimeView = props => {
       <tbody>
         <tr>
           {registerNames.map(key => {
-            return <th key={key}>{registers[key]}</th>;
+            return <th key={`${key}-literal`}>{registers[key]}</th>;
+          })}
+        </tr>
+        <tr>
+          {registerNames.map(key => {
+            return <th key={`${key}-hex`}>0x{registers[key].toString(16)}</th>;
           })}
         </tr>
       </tbody>

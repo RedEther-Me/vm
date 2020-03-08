@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, Fragment } from "react";
 import { Table } from "reactstrap";
 
 import { machine } from "../machine/setup";
@@ -26,22 +26,25 @@ const RuntimeView = props => {
   }, [stackTop, stackSize]);
 
   return (
-    <Table>
-      <thead>
-        <tr>
-          <th>Address</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {stack.map(([address, value]) => (
-          <tr key={address}>
-            <td>{address}</td>
-            <td>{value}</td>
+    <Fragment>
+      <h3>Stack</h3>
+      <Table>
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Value</th>
           </tr>
-        ))}
-      </tbody>
-    </Table>
+        </thead>
+        <tbody>
+          {stack.map(([address, value]) => (
+            <tr key={address}>
+              <td>{address}</td>
+              <td>{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </Fragment>
   );
 };
 

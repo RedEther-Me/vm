@@ -4,28 +4,28 @@ main:
   CALL clearScreen
 
   ## Call Print 'Hello World'
-  STORE 'H' 0x1001 
-  STORE 'e' 0x1002 
-  STORE 'l' 0x1003 
-  STORE 'l' 0x1004 
-  STORE 'o' 0x1005 
-  STORE ' ' 0x1006 
-  STORE 'W' 0x1007 
-  STORE 'o' 0x1008 
-  STORE 'r' 0x1009 
-  STORE 'l' 0x100a 
-  STORE 'd' 0x100b 
-  STORE '!' 0x100c 
+  STORE 'H' 0x1000
+  STORE 'e' 0x1002
+  STORE 'l' 0x1004
+  STORE 'l' 0x1006
+  STORE 'o' 0x1008
+  STORE ' ' 0x100a
+  STORE 'W' 0x100c
+  STORE 'o' 0x100e
+  STORE 'r' 0x1010
+  STORE 'l' 0x1012
+  STORE 'd' 0x1014
+  STORE '!' 0x1016
 
-  PUSH 0x1001
+  PUSH 0x1000
   PUSH 12
-  PUSH 1
+  PUSH 2
   CALL println
 
   ## Call Print Number
-  PUSH 12345
-  PUSH 1
-  CALL printNum
+  ## PUSH 12345
+  ## PUSH 1
+  ## CALL printNum
 
   TERM
 
@@ -44,8 +44,17 @@ clearScreen:
 
 ## Print X Characters from memory location
 println:
-  ## ARG 0 => r0: Address of first character
-  ## ARG 1 => r1: Number of characters
+  ## ARGS are loaded in reverse order
+  ## ARG 1 => r1: Address of first character
+  ## ARG 0 => r2: Number of characters
+
+  MOV fp acc
+  ADD 22 acc            ## Location of Argument Count
+  ADD 2 acc             ## Location of Character Count
+  LOAD acc r1
+  ADD 2 acc             ## Location of First Character Address
+  LOAD acc r2
+  
   LOAD 0x7000 r3        ## Load the next row to print to
 
   MOV 0x3000 r6         ## BEGINING OF DISPLAY
@@ -55,8 +64,9 @@ println:
   MULT r3 r7            ## MULTIPLY r3 (row) x r7 (row characters) => r7
   ADD r6 r7             ## ADD r6 (beginning of display) + r7 (row x row characters) => r7
   
-  MOV 'H' r4
-  STORE r4 r7           ## PRINT CHARACTER TO SCREEN
+  ## MOV 'H' r4
+  ## STORE r4 r7           ## PRINT CHARACTER TO SCREEN
+  COPY r2 r7
 
   ## Increment the line counter
   MOV 1 r4

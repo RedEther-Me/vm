@@ -14,7 +14,9 @@ const registerLookup = {
   r5: 6,
   r6: 7,
   r7: 8,
-  r8: 9
+  r8: 9,
+  sp: 10,
+  fp: 11
 };
 
 const i2s = (instruction, length = 8) =>
@@ -58,6 +60,10 @@ export default parser => {
       return [];
     }
 
+    reg_lit() {
+      return [];
+    }
+
     reg_hex() {
       const { HEX_VALUE, REG } = children;
 
@@ -88,14 +94,25 @@ export default parser => {
 
     mov(ctx) {
       const { children } = ctx;
-      const { REG, lit_hex_char } = children;
+      const { REG, reg_lit_hex_char } = children;
 
-      const value = this.hexOrLitOrChar(lit_hex_char[0].children);
+      if (reg_lit_hex_char[0].children.REG) {
+        const { instruction, pattern } = INSTRUCTIONS.MOV_REG_REG;
+
+        const fullInstruction = convertToInstruction(pattern, {
+          S: this.register(reg_lit_hex_char[0].children.REG[0]),
+          T: this.register(REG[0])
+        });
+
+        return [i2s(instruction), i2s(fullInstruction)];
+      }
+
+      const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
 
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        R: this.register(REG[0])
+        T: this.register(REG[0])
       });
 
       return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
@@ -279,23 +296,35 @@ export default parser => {
 
     arithmetic(ctx) {
       const { children } = ctx;
-      const { REG, ADD, SUB, DIV, MULT } = children;
+      const { reg_lit, REG, ADD, SUB, DIV, MULT } = children;
+
+      const isReg = !!reg_lit[0].children.REG;
 
       const opLookup = () => {
-        if (ADD) return INSTRUCTIONS.ARITH_ADD;
-        if (SUB) return INSTRUCTIONS.ARITH_SUB;
-        if (MULT) return INSTRUCTIONS.ARITH_MULT;
-        if (DIV) return INSTRUCTIONS.ARITH_DIV;
+        if (isReg) {
+          if (ADD) return INSTRUCTIONS.ARITH_ADD_REG;
+          if (SUB) return INSTRUCTIONS.ARITH_SUB;
+          if (MULT) return INSTRUCTIONS.ARITH_MULT;
+          if (DIV) return INSTRUCTIONS.ARITH_DIV;
+        }
+
+        if (ADD) return INSTRUCTIONS.ARITH_ADD_LIT;
       };
 
       const { instruction, pattern } = opLookup();
 
+      const value = isReg
+        ? this.register(reg_lit[0].children.REG[0])
+        : this.literal(reg_lit[0].children.LITERAL[0]);
+
       const fullInstruction = convertToInstruction(pattern, {
-        S: this.register(REG[0]),
-        T: this.register(REG[1])
+        S: isReg ? value : undefined,
+        T: this.register(REG[0])
       });
 
-      return [i2s(instruction), i2s(fullInstruction)];
+      const extraInstruction = isReg ? [] : [i2s(value, 16)];
+
+      return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
     }
 
     statement(ctx) {

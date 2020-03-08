@@ -45,3 +45,9 @@ RET
 ```
 TERM
 ```
+
+# ARITHMATIC
+
+```
+ADD value1[literal|register] register
+```

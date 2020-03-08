@@ -30,9 +30,14 @@ class AsmParser extends CstParser {
     $.RULE("reg_hex", () => {
       $.OR([
         { ALT: () => $.CONSUME(allTokens.REG) },
-        { ALT: () => $.CONSUME(allTokens.LITERAL) },
-        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
-        { ALT: () => $.CONSUME(allTokens.CHAR) }
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) }
+      ]);
+    });
+
+    $.RULE("reg_lit", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.LITERAL) }
       ]);
     });
 
@@ -42,7 +47,7 @@ class AsmParser extends CstParser {
 
     $.RULE("mov", () => {
       $.CONSUME(allTokens.MOV);
-      $.SUBRULE($.lit_hex_char);
+      $.SUBRULE($.reg_lit_hex_char);
       $.CONSUME(allTokens.REG);
     });
 
@@ -84,7 +89,7 @@ class AsmParser extends CstParser {
         { ALT: () => $.CONSUME(allTokens.MULT) },
         { ALT: () => $.CONSUME(allTokens.DIV) }
       ]);
-      $.CONSUME1(allTokens.REG);
+      $.SUBRULE1($.reg_lit);
       $.CONSUME2(allTokens.REG);
     });
 

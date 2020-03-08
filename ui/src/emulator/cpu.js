@@ -49,6 +49,10 @@ class CPU {
     return instruction.toString(2).padStart(16, "0");
   }
 
+  getName(address) {
+    return this.registerNames[(address / 2) % this.registerNames.length];
+  }
+
   getRegisterByAddress(address) {
     return this.registers.getUint16(address);
   }
@@ -62,9 +66,7 @@ class CPU {
   }
 
   setRegisterByAddress(address, value) {
-    const findName = this.registerNames[
-      (address / 2) % this.registerNames.length
-    ];
+    const findName = this.getName(address);
 
     this.setRegisterByName(findName, value);
   }
@@ -173,13 +175,30 @@ class CPU {
       case INSTRUCTIONS.MOV_LIT_REG.instruction: {
         const options = this.fetch();
 
-        const { R } = convertFromInstruction(
+        const { T } = convertFromInstruction(
           INSTRUCTIONS.MOV_LIT_REG.pattern,
           options
         );
         const V = this.fetch16();
 
-        this.setRegisterByAddress(R * 2, V);
+        // console.log(`MOV ${T * 2} ${V}`);
+
+        this.setRegisterByAddress(T * 2, V);
+        return;
+      }
+
+      case INSTRUCTIONS.MOV_REG_REG.instruction: {
+        const options = this.fetch();
+
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.MOV_REG_REG.pattern,
+          options
+        );
+
+        const V = this.registers.getUint16(S * 2);
+        console.log(`MOV ${this.getName(S * 2)} ${this.getName(T * 2)} ${V}`);
+
+        this.setRegisterByAddress(T * 2, V);
         return;
       }
 
@@ -216,6 +235,11 @@ class CPU {
       case INSTRUCTIONS.STORE_LIT_HEX.instruction: {
         const value = this.fetch16();
         const address = this.fetch16();
+
+        console.log("STORE_LIT_HEX", {
+          value,
+          address: `${address} 0x${address.toString(16)}`
+        });
 
         this.setMemoryByAddress(address, value);
         return;
@@ -287,6 +311,19 @@ class CPU {
         const to = this.getRegisterByAddress(T * 2);
 
         const value = this.getMemoryByAddress(from);
+
+        console.log("COPY_MEM_REG_REG", {
+          from: {
+            name: this.getName(S * 2),
+            location: `${from} 0x${from.toString(16)}`,
+            value
+          },
+          to: {
+            name: this.getName(T * 2),
+            location: `${to} 0x${to.toString(16)}`
+          }
+        });
+
         this.setMemoryByAddress(to, value);
         return;
       }
@@ -323,36 +360,73 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.ARITH_ADD.instruction:
+      case INSTRUCTIONS.ARITH_ADD_REG.instruction:
       case INSTRUCTIONS.ARITH_SUB.instruction:
       case INSTRUCTIONS.ARITH_MULT.instruction:
       case INSTRUCTIONS.ARITH_DIV.instruction: {
         const options = this.fetch();
 
         const { S, T } = convertFromInstruction(
-          INSTRUCTIONS.ARITH_ADD.pattern,
+          INSTRUCTIONS.ARITH_ADD_REG.pattern,
           options
         );
         const v1 = this.registers.getUint16(S * 2);
         const v2 = this.registers.getUint16(T * 2);
 
         switch (instruction) {
-          case INSTRUCTIONS.ARITH_ADD.instruction: {
-            this.registers.setUint16(T * 2, v1 + v2);
+          case INSTRUCTIONS.ARITH_ADD_REG.instruction: {
+            console.log(`ARITH_ADD_REG ${T * 2} ${v1} + ${v2} = ${v1 + v2}`);
+            this.setRegisterByAddress(T * 2, v1 + v2);
             return;
           }
           case INSTRUCTIONS.ARITH_SUB.instruction: {
-            this.registers.setUint16(T * 2, v1 - v2);
+            this.setRegisterByAddress(T * 2, v1 - v2);
             return;
           }
           case INSTRUCTIONS.ARITH_MULT.instruction: {
-            this.registers.setUint16(T * 2, v1 * v2);
+            this.setRegisterByAddress(T * 2, v1 * v2);
             return;
           }
           case INSTRUCTIONS.ARITH_DIV.instruction: {
-            this.registers.setUint16(T * 2, v1 / v2);
+            this.setRegisterByAddress(T * 2, v1 / v2);
             return;
           }
+          default:
+            throw new Error("arithmetic: no valid operation");
+        }
+      }
+
+      case INSTRUCTIONS.ARITH_ADD_LIT.instruction: {
+        // case INSTRUCTIONS.ARITH_SUB.instruction:
+        // case INSTRUCTIONS.ARITH_MULT.instruction:
+        // case INSTRUCTIONS.ARITH_DIV.instruction: {
+        const options = this.fetch();
+
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.ARITH_ADD_LIT.pattern,
+          options
+        );
+        const v1 = this.fetch16();
+        const v2 = this.registers.getUint16(T * 2);
+
+        switch (instruction) {
+          case INSTRUCTIONS.ARITH_ADD_LIT.instruction: {
+            console.log(`ARITH_ADD_LIT ${T * 2} ${v1} + ${v2} = ${v1 + v2}`);
+            this.setRegisterByAddress(T * 2, v1 + v2);
+            return;
+          }
+          // case INSTRUCTIONS.ARITH_SUB.instruction: {
+          //   this.setRegisterByAddress(T * 2, v1 - v2);
+          //   return;
+          // }
+          // case INSTRUCTIONS.ARITH_MULT.instruction: {
+          //   this.setRegisterByAddress(T * 2, v1 * v2);
+          //   return;
+          // }
+          // case INSTRUCTIONS.ARITH_DIV.instruction: {
+          //   this.setRegisterByAddress(T * 2, v1 / v2);
+          //   return;
+          // }
           default:
             throw new Error("arithmetic: no valid operation");
         }

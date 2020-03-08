@@ -21,7 +21,7 @@ const DIV = createToken({ name: "DIV", pattern: /DIV/ });
 
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
-const REG = createToken({ name: "REG", pattern: /r[0-8]/ });
+const REG = createToken({ name: "REG", pattern: /r[0-8]|acc|sp|fp/ });
 
 const LITERAL = createToken({ name: "LITERAL", pattern: /[0-9]+/ });
 const HEX_VALUE = createToken({ name: "HEX_VALUE", pattern: /0x[0-9A-Fa-f]+/ });
