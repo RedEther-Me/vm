@@ -1,0 +1,14 @@
+{
+  "name": "@emulator/console",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
+  "dependencies": {
+    "@emulator/core": "1.0.0"
+  },
+  "type": "module"
+}

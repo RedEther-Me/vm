@@ -1,7 +1,7 @@
 # Assembler
 
 `node ./assembler -h`
-`node ./assembler -s ./assembler/example.txt`
+`node ./assembler -s ./test-files/example.asm -o ./test-files/example.bin`
 
 # Virtual Machine
 
