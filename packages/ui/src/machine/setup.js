@@ -1,8 +1,4 @@
-// import { CPU, MemoryController, createMemory } from "@emulator/core";
-
-class CPU {}
-class MemoryController {}
-const createMemory = () => {};
+import { CPU, MemoryController, createMemory } from "@emulator/core";
 
 export let machine;
 
