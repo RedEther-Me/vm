@@ -1,11 +1,13 @@
 import commander from "commander";
 
-import { readFileAsync } from "../helpers";
+import {
+  readFileAsync,
+  createMemory,
+  CPU,
+  MemoryController
+} from "@emulator/core";
 
-import createMemory from "./memory";
-import CPU from "./cpu";
-import MemoryController from "./memory-controller";
-import createDisplayDevice from "./display-controller";
+import createDisplayDevice from "./display-controller.js";
 
 commander.option("-f, --file [file]", "executable file", "output.bin");
 
@@ -14,7 +16,7 @@ commander.parse(process.argv);
 async function processFile() {
   const file = await readFileAsync(commander.file);
 
-  const memory = createMemory(256);
+  const memory = createMemory(256 * 256);
 
   const lines = file.match(/.{1,16}/g);
 

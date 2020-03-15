@@ -1,7 +1,7 @@
-import { convertFromInstruction } from "./helpers";
+import { convertFromInstruction } from "./helpers/index.js";
 
-import createMemory from "./memory";
-import INSTRUCTIONS from "./instructions";
+import createMemory from "./memory.js";
+import INSTRUCTIONS from "./instructions.js";
 
 class CPU {
   constructor(memory, debug) {

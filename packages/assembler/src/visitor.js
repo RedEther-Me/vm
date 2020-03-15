@@ -1,6 +1,4 @@
-import { convertToInstruction } from "../helpers/index.js";
-
-import INSTRUCTIONS from "../emulator/instructions.js";
+import { convertToInstruction, INSTRUCTIONS } from "@emulator/core";
 
 import postProcessor from "./post-processor.js";
 

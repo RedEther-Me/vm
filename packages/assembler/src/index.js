@@ -1,6 +1,6 @@
 import commander from "commander";
 
-import { readFileAsync, writeFileAsync } from "../helpers/index.js";
+import { readFileAsync, writeFileAsync } from "@emulator/core";
 
 import assembler from "./assembler.js";
 

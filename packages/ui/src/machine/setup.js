@@ -1,6 +1,8 @@
-import createMemory from "../emulator/memory";
-import MemoryController from "../emulator/memory-controller";
-import CPU from "../emulator/cpu";
+// import { CPU, MemoryController, createMemory } from "@emulator/core";
+
+class CPU {}
+class MemoryController {}
+const createMemory = () => {};
 
 export let machine;
 
