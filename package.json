@@ -1,17 +1,28 @@
 {
   "name": "emulator",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "author": "Andrew Johnson <lordxuqra@gmail.com>",
   "license": "MIT",
-  "type": "module",
   "scripts": {
-    "test": "jest"
+    "bootstrap": "yarn lerna bootstrap"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/jest/**",
+      "**/react-scripts",
+      "**/react-scripts/**"
+    ]
   },
   "dependencies": {
     "chalk": "^2.4.2",
     "chevrotain": "^6.5.0",
     "commander": "^3.0.2",
+    "cross-env": "^5.2.1",
+    "lerna": "^3.16.4",
     "jest": "^24.9.0"
   }
 }

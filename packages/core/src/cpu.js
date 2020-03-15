@@ -1,4 +1,4 @@
-import { convertFromInstruction } from "../helpers";
+import { convertFromInstruction } from "./helpers";
 
 import createMemory from "./memory";
 import INSTRUCTIONS from "./instructions";
