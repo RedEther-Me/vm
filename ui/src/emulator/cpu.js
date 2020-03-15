@@ -163,6 +163,20 @@ class CPU {
     this.setRegisterByName("fp", framePointerAddress + stackFrameSize);
   }
 
+  compInts(v1, v2) {
+    if (v1 === v2) {
+      return 0x1; // 0001
+    }
+
+    if (v1 > v2) {
+      return 0x2; // 0010
+    }
+
+    if (v1 < v2) {
+      return 0x4; // 0100
+    }
+  }
+
   execute(command) {
     const instruction = command & 0xff;
 
@@ -375,20 +389,63 @@ class CPU {
 
         switch (instruction) {
           case INSTRUCTIONS.ARITH_ADD_REG.instruction: {
-            console.log(`ARITH_ADD_REG ${T * 2} ${v1} + ${v2} = ${v1 + v2}`);
+            console.log("ARITH_ADD_REG [v2 + v1]", {
+              v2: {
+                name: this.getName(T * 2),
+                value: v2
+              },
+              v1: {
+                name: this.getName(S * 2),
+                value: v1
+              },
+              result: v2 + v1
+            });
             this.setRegisterByAddress(T * 2, v1 + v2);
             return;
           }
           case INSTRUCTIONS.ARITH_SUB_REG.instruction: {
-            this.setRegisterByAddress(T * 2, v1 - v2);
+            console.log("ARITH_SUB_REG [v2 - v1]", {
+              v2: {
+                name: this.getName(T * 2),
+                value: v2
+              },
+              v1: {
+                name: this.getName(S * 2),
+                value: v1
+              },
+              result: v2 - v1
+            });
+            this.setRegisterByAddress(T * 2, v2 - v1);
             return;
           }
           case INSTRUCTIONS.ARITH_MULT.instruction: {
-            this.setRegisterByAddress(T * 2, v1 * v2);
+            console.log("ARITH_MULT_REG [v2 * v1]", {
+              v2: {
+                name: this.getName(T * 2),
+                value: v2
+              },
+              v1: {
+                name: this.getName(S * 2),
+                value: v1
+              },
+              result: v2 * v1
+            });
+            this.setRegisterByAddress(T * 2, v2 * v1);
             return;
           }
           case INSTRUCTIONS.ARITH_DIV.instruction: {
-            this.setRegisterByAddress(T * 2, v1 / v2);
+            console.log("ARITH_DIV_REG [v2 / v1]", {
+              v2: {
+                name: this.getName(T * 2),
+                value: v2
+              },
+              v1: {
+                name: this.getName(S * 2),
+                value: v1
+              },
+              result: v2 / v1
+            });
+            this.setRegisterByAddress(T * 2, v2 / v1);
             return;
           }
           default:
@@ -402,7 +459,7 @@ class CPU {
         // case INSTRUCTIONS.ARITH_DIV.instruction: {
         const options = this.fetch();
 
-        const { S, T } = convertFromInstruction(
+        const { T } = convertFromInstruction(
           INSTRUCTIONS.ARITH_ADD_LIT.pattern,
           options
         );
@@ -411,20 +468,40 @@ class CPU {
 
         switch (instruction) {
           case INSTRUCTIONS.ARITH_ADD_LIT.instruction: {
-            console.log(`ARITH_ADD_LIT ${T * 2} ${v1} + ${v2} = ${v1 + v2}`);
-            this.setRegisterByAddress(T * 2, v1 + v2);
+            console.log("ARITH_ADD_LIT [v2 + v1]", {
+              v2: {
+                name: this.getName(T * 2),
+                value: v2
+              },
+              v1: {
+                value: v1
+              },
+              result: v2 + v1
+            });
+            this.setRegisterByAddress(T * 2, v2 + v1);
             return;
           }
           case INSTRUCTIONS.ARITH_SUB_LIT.instruction: {
-            this.setRegisterByAddress(T * 2, v1 - v2);
+            console.log("ARITH_SUB_LIT [v2 - v1]", {
+              v2: {
+                name: this.getName(T * 2),
+                value: v2
+              },
+              v1: {
+                value: v1
+              },
+              result: v2 - v1
+            });
+
+            this.setRegisterByAddress(T * 2, v2 - v1);
             return;
           }
           // case INSTRUCTIONS.ARITH_MULT.instruction: {
-          //   this.setRegisterByAddress(T * 2, v1 * v2);
+          //   this.setRegisterByAddress(T * 2, v2 * v1);
           //   return;
           // }
           // case INSTRUCTIONS.ARITH_DIV.instruction: {
-          //   this.setRegisterByAddress(T * 2, v1 / v2);
+          //   this.setRegisterByAddress(T * 2, v2 / v1);
           //   return;
           // }
           default:
@@ -432,12 +509,69 @@ class CPU {
         }
       }
 
+      case INSTRUCTIONS.CMP_LIT.instruction: {
+        const options = this.fetch();
+
+        const { T } = convertFromInstruction(
+          INSTRUCTIONS.CMP_LIT.pattern,
+          options
+        );
+
+        const v1 = this.fetch16();
+        const v2 = this.registers.getUint16(T * 2);
+
+        const result = this.compInts(v1, v2);
+        this.setRegisterByName("acc", result);
+
+        console.log("CMP_LIT", {
+          source: {
+            value: v1
+          },
+          target: {
+            name: this.getName(T * 2),
+            value: v2
+          },
+          result
+        });
+
+        return;
+      }
+
+      case INSTRUCTIONS.CMP_REG.instruction: {
+        const options = this.fetch();
+
+        const { S, T } = convertFromInstruction(
+          INSTRUCTIONS.CMP_REG.pattern,
+          options
+        );
+
+        const v1 = this.registers.getUint16(S * 2);
+        const v2 = this.registers.getUint16(T * 2);
+
+        const result = this.compInts(v1, v2);
+        this.setRegisterByName("acc", result);
+
+        console.log("CMP_REG", {
+          source: {
+            name: this.getName(S * 2),
+            value: v1
+          },
+          target: {
+            name: this.getName(T * 2),
+            value: v2
+          },
+          result
+        });
+
+        return;
+      }
+
       // Jump if not equal
       case INSTRUCTIONS.JMP_NOT_EQ.instruction: {
-        const value = this.fetch16();
+        const cmp = this.getRegister("acc");
         const address = this.fetch16();
 
-        if (value !== this.getRegister("acc")) {
+        if (!(cmp & 0x1)) {
           this.setRegisterByName("ip", address);
         }
 

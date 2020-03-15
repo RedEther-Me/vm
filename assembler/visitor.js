@@ -294,9 +294,17 @@ export default parser => {
       return [i2s(instruction)];
     }
 
+    jump_not_equal(ctx) {
+      const { LABEL } = ctx.children;
+
+      const { instruction } = INSTRUCTIONS.JMP_NOT_EQ;
+
+      return [i2s(instruction), { type: "address", name: LABEL[0].image }];
+    }
+
     arithmetic(ctx) {
       const { children } = ctx;
-      const { reg_lit, REG, ADD, SUB, DIV, MULT } = children;
+      const { reg_lit, REG, ADD, SUB, DIV, MULT, CMP } = children;
 
       const isReg = !!reg_lit[0].children.REG;
 
@@ -306,12 +314,14 @@ export default parser => {
           if (SUB) return INSTRUCTIONS.ARITH_SUB_REG;
           if (MULT) return INSTRUCTIONS.ARITH_MULT;
           if (DIV) return INSTRUCTIONS.ARITH_DIV;
+          if (CMP) return INSTRUCTIONS.CMP_REG;
         }
 
         if (ADD) return INSTRUCTIONS.ARITH_ADD_LIT;
         if (SUB) return INSTRUCTIONS.ARITH_SUB_LIT;
         // if (MULT) return INSTRUCTIONS.ARITH_MULT;
         // if (DIV) return INSTRUCTIONS.ARITH_DIV;
+        if (CMP) return INSTRUCTIONS.CMP_LIT;
       };
 
       const { instruction, pattern } = opLookup();
@@ -341,9 +351,9 @@ export default parser => {
     }
 
     method(ctx) {
-      const { LABEL, RET } = ctx;
+      const { target, RET } = ctx;
 
-      const label = { type: "key", name: LABEL[0].image };
+      const label = { type: "key", name: target[0].children.LABEL[0].image };
 
       const statements = (ctx.statement || []).reduce(
         (acc, statement) => [...acc, ...this.visit(statement)],
@@ -361,11 +371,20 @@ export default parser => {
         []
       );
 
-      return [{ type: "key", name: "main" }, ...statements];
+      return [
+        { type: "key", name: "main" },
+        ...statements,
+        ...this.terminate()
+      ];
     }
 
     terminate() {
       return ["00000000"];
+    }
+
+    target(ctx) {
+      const { LABEL } = ctx.children;
+      return [{ type: "key", name: LABEL[0].image }];
     }
 
     program(ctx) {

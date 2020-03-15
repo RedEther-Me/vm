@@ -82,12 +82,18 @@ class AsmParser extends CstParser {
       ]);
     });
 
+    $.RULE("jump_not_equal", () => {
+      $.CONSUME(allTokens.JUMP_NOT_EQUAL);
+      $.CONSUME(allTokens.LABEL);
+    });
+
     $.RULE("arithmetic", () => {
       $.OR([
         { ALT: () => $.CONSUME(allTokens.ADD) },
         { ALT: () => $.CONSUME(allTokens.SUB) },
         { ALT: () => $.CONSUME(allTokens.MULT) },
-        { ALT: () => $.CONSUME(allTokens.DIV) }
+        { ALT: () => $.CONSUME(allTokens.DIV) },
+        { ALT: () => $.CONSUME(allTokens.CMP) }
       ]);
       $.SUBRULE1($.reg_lit);
       $.CONSUME2(allTokens.REG);
@@ -102,13 +108,18 @@ class AsmParser extends CstParser {
         { ALT: () => $.SUBRULE($.push) },
         { ALT: () => $.SUBRULE($.call) },
         { ALT: () => $.SUBRULE($.arithmetic) },
-        { ALT: () => $.SUBRULE($.terminate) }
+        { ALT: () => $.SUBRULE($.target) },
+        { ALT: () => $.SUBRULE($.jump_not_equal) }
       ]);
     });
 
-    $.RULE("method", () => {
+    $.RULE("target", () => {
       $.CONSUME(allTokens.LABEL);
       $.CONSUME(allTokens.COLON);
+    });
+
+    $.RULE("method", () => {
+      $.SUBRULE($.target);
       $.MANY(() => $.SUBRULE($.statement));
       $.CONSUME(allTokens.RET);
     });
@@ -122,6 +133,7 @@ class AsmParser extends CstParser {
       $.CONSUME(allTokens.MAIN);
       $.CONSUME(allTokens.COLON);
       $.MANY(() => $.SUBRULE($.statement));
+      $.SUBRULE($.terminate);
     });
 
     $.RULE("program", () => {

@@ -13,11 +13,13 @@ const PUSH = createToken({ name: "PUSH", pattern: /PUSH/ });
 
 const CALL = createToken({ name: "CALL", pattern: /CALL/ });
 const RET = createToken({ name: "RET", pattern: /RET/ });
+const JUMP_NOT_EQUAL = createToken({ name: "JUMP_NOT_EQUAL", pattern: /JNE/ });
 
 const ADD = createToken({ name: "ADD", pattern: /ADD/ });
 const SUB = createToken({ name: "SUB", pattern: /SUB/ });
 const MULT = createToken({ name: "MULT", pattern: /MULT/ });
 const DIV = createToken({ name: "DIV", pattern: /DIV/ });
+const CMP = createToken({ name: "CMP", pattern: /CMP/ });
 
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
@@ -58,10 +60,12 @@ export const orderedTokens = [
   PUSH,
   CALL,
   RET,
+  JUMP_NOT_EQUAL,
   ADD,
   SUB,
   MULT,
   DIV,
+  CMP,
   TERM,
   REG,
   HEX_VALUE,

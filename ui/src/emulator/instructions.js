@@ -16,10 +16,11 @@ const COPY_MEM_REG_REG = "COPY_MEM_REG_REG";
 const COPY_MEM_REG_HEX = "COPY_MEM_REG_HEX";
 const COPY_MEM_HEX_REG = "COPY_MEM_HEX_REG";
 
-const JMP_NOT_EQ = "JMP_NOT_EQ";
 const CAL_LIT = "CAL_LIT";
 const CAL_REG = "CAL_REG";
 const RET = "RET";
+
+const JMP_NOT_EQ = "JMP_NOT_EQ";
 
 const PSH_LIT = "PSH_LIT";
 const PSH_REG = "PSH_REG";
@@ -31,6 +32,8 @@ const ARITH_SUB_REG = "ARITH_SUB_REG";
 const ARITH_SUB_LIT = "ARITH_SUB_LIT";
 const ARITH_MULT = "ARITH_MULT";
 const ARITH_DIV = "ARITH_DIV";
+const CMP_REG = "CMP_REG";
+const CMP_LIT = "CMP_LIT";
 
 const instructions = {
   [TERMINATE]: 0x00,
@@ -38,10 +41,10 @@ const instructions = {
   [MOV_LIT_REG]: 0x01,
   [MOV_REG_REG]: 0x02,
 
-  [JMP_NOT_EQ]: 0x10,
-  [CAL_LIT]: 0x11,
-  [CAL_REG]: 0x12,
+  [CAL_LIT]: 0x10,
+  [CAL_REG]: 0x11,
   [RET]: 0x13,
+  [JMP_NOT_EQ]: 0x15,
 
   [PSH_LIT]: 0x21,
   [PSH_REG]: 0x22,
@@ -65,7 +68,9 @@ const instructions = {
   [ARITH_SUB_REG]: 0x62,
   [ARITH_SUB_LIT]: 0x63,
   [ARITH_MULT]: 0x64,
-  [ARITH_DIV]: 0x66
+  [ARITH_DIV]: 0x66,
+  [CMP_REG]: 0x6a,
+  [CMP_LIT]: 0x6b
 };
 
 export default {
@@ -253,6 +258,23 @@ export default {
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [CMP_REG]: {
+    instruction: instructions[CMP_REG],
+    mask: "TTTTSSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [CMP_LIT]: {
+    instruction: instructions[CMP_LIT],
+    mask: "TTTT0000",
+    pattern: {
       T: { P: 0xf0, S: 4 }
     }
   }
