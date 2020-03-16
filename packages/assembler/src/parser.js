@@ -71,7 +71,12 @@ class AsmParser extends CstParser {
 
     $.RULE("push", () => {
       $.CONSUME(allTokens.PUSH);
-      $.SUBRULE($.lit_hex_char);
+      $.SUBRULE($.reg_lit_hex_char);
+    });
+
+    $.RULE("pop", () => {
+      $.CONSUME(allTokens.POP);
+      $.CONSUME2(allTokens.REG);
     });
 
     $.RULE("call", () => {
@@ -93,6 +98,7 @@ class AsmParser extends CstParser {
         { ALT: () => $.CONSUME(allTokens.SUB) },
         { ALT: () => $.CONSUME(allTokens.MULT) },
         { ALT: () => $.CONSUME(allTokens.DIV) },
+        { ALT: () => $.CONSUME(allTokens.MOD) },
         { ALT: () => $.CONSUME(allTokens.CMP) }
       ]);
       $.SUBRULE1($.reg_lit);
@@ -118,6 +124,7 @@ class AsmParser extends CstParser {
         { ALT: () => $.SUBRULE($.store) },
         { ALT: () => $.SUBRULE($.copy) },
         { ALT: () => $.SUBRULE($.push) },
+        { ALT: () => $.SUBRULE($.pop) },
         { ALT: () => $.SUBRULE($.call) },
         { ALT: () => $.SUBRULE($.arithmetic) },
         { ALT: () => $.SUBRULE($.binary) },

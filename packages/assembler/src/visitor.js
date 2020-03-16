@@ -35,7 +35,14 @@ export default parser => {
     }
 
     literal(ctx) {
-      return parseInt(ctx.image, 10);
+      const test = parseInt(ctx.image, 10);
+
+      if (test < 0) {
+        // return (1 << 15) | Math.abs(test);
+        return (test >>> 0) & 0xffff;
+      }
+
+      return test;
     }
 
     hex(ctx) {
@@ -197,7 +204,7 @@ export default parser => {
 
       // Both are HEX
       if (first.HEX_VALUE && second.HEX_VALUE) {
-        const { instruction } = INSTRUCTIONS.COPY_MEM_HEX_HEX;
+        const { instruction } = INSTRUCTIONS.COPY_HEX_HEX;
 
         const from = this.hex(first.HEX_VALUE[0]);
         const to = this.hex(second.HEX_VALUE[0]);
@@ -207,7 +214,7 @@ export default parser => {
 
       // Both are REG
       if (first.REG && second.REG) {
-        const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_REG_REG;
+        const { instruction, pattern } = INSTRUCTIONS.COPY_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
           S: this.register(first.REG[0]),
@@ -218,7 +225,7 @@ export default parser => {
       }
 
       if (first.REG && second.HEX_VALUE) {
-        const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_REG_HEX;
+        const { instruction, pattern } = INSTRUCTIONS.COPY_REG_HEX;
 
         const fullInstruction = convertToInstruction(pattern, {
           S: this.register(first.REG[0])
@@ -229,7 +236,7 @@ export default parser => {
         return [i2s(instruction), i2s(fullInstruction), i2s(to, 16)];
       }
 
-      const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_HEX_REG;
+      const { instruction, pattern } = INSTRUCTIONS.COPY_HEX_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
         T: this.register(second.REG[0])
@@ -241,23 +248,35 @@ export default parser => {
     }
 
     push(ctx) {
-      const { lit_hex_char } = ctx.children;
+      const { reg_lit_hex_char } = ctx.children;
 
-      if (lit_hex_char[0].children.REG) {
+      if (reg_lit_hex_char[0].children.REG) {
         const { instruction, pattern } = INSTRUCTIONS.PSH_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          R: this.register(lit_hex_char[0].children.REG[0])
+          R: this.register(reg_lit_hex_char[0].children.REG[0])
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const maybeValue = this.hexOrLitOrChar(lit_hex_char[0].children);
+      const maybeValue = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
 
       const { instruction } = INSTRUCTIONS.PSH_LIT;
 
       return [i2s(instruction), i2s(maybeValue, 16)];
+    }
+
+    pop(ctx) {
+      const { REG } = ctx.children;
+
+      const { instruction, pattern } = INSTRUCTIONS.POP;
+
+      const fullInstruction = convertToInstruction(pattern, {
+        R: this.register(REG[0])
+      });
+
+      return [i2s(instruction), i2s(fullInstruction)];
     }
 
     call(ctx) {
@@ -302,24 +321,30 @@ export default parser => {
 
     arithmetic(ctx) {
       const { children } = ctx;
-      const { reg_lit, REG, ADD, SUB, DIV, MULT, CMP } = children;
+      const { reg_lit, REG, ADD, SUB, DIV, MULT, MOD, CMP } = children;
 
       const isReg = !!reg_lit[0].children.REG;
 
       const opLookup = () => {
         if (isReg) {
-          if (ADD) return INSTRUCTIONS.ARITH_ADD_REG;
-          if (SUB) return INSTRUCTIONS.ARITH_SUB_REG;
-          if (MULT) return INSTRUCTIONS.ARITH_MULT;
-          if (DIV) return INSTRUCTIONS.ARITH_DIV_REG;
-          if (CMP) return INSTRUCTIONS.CMP_REG_REG;
+          if (ADD && ADD[0].image === "ADD") return INSTRUCTIONS.ADD_REG;
+          if (ADD && ADD[0].image === "ADDU") return INSTRUCTIONS.ADDU_REG;
+          if (SUB) return INSTRUCTIONS.SUB_REG;
+          if (MULT) return INSTRUCTIONS.MULT_REG;
+          if (DIV) return INSTRUCTIONS.DIV_REG;
+          if (MOD) return INSTRUCTIONS.MOD_REG;
+          if (CMP && CMP[0].image === "CMP") return INSTRUCTIONS.CMP_REG;
+          if (CMP && CMP[0].image === "CMPU") return INSTRUCTIONS.CMPU_REG;
         }
 
-        if (ADD) return INSTRUCTIONS.ARITH_ADD_LIT;
-        if (SUB) return INSTRUCTIONS.ARITH_SUB_LIT;
-        if (MULT) return INSTRUCTIONS.ARITH_MULT_LIT;
-        if (DIV) return INSTRUCTIONS.ARITH_DIV_LIT;
-        if (CMP) return INSTRUCTIONS.CMP_LIT;
+        if (ADD && ADD[0].image === "ADD") return INSTRUCTIONS.ADD_LIT;
+        if (ADD && ADD[0].image === "ADDU") return INSTRUCTIONS.ADDU_LIT;
+        if (SUB) return INSTRUCTIONS.SUB_LIT;
+        if (MULT) return INSTRUCTIONS.MULT_LIT;
+        if (DIV) return INSTRUCTIONS.DIV_LIT;
+        if (MOD) return INSTRUCTIONS.MOD_LIT;
+        if (CMP && CMP[0].image === "CMP") return INSTRUCTIONS.CMP_LIT;
+        if (CMP && CMP[0].image === "CMPU") return INSTRUCTIONS.CMPU_LIT;
       };
 
       const { instruction, pattern } = opLookup();

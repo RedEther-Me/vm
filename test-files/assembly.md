@@ -25,7 +25,7 @@ PUSH value[literal|hex|char|(register)]
 ```
 
 ```
-PUSH register
+POP target[register]
 ```
 
 # CALL
@@ -62,6 +62,10 @@ TERM
 ADD v1[literal|register] v2[register]
 ```
 
+```
+ADDU v1[literal|register] v2[register]
+```
+
 stores the result of v2 + v1 into v2
 
 ```
@@ -86,6 +90,10 @@ stores the result of v2 / v1 into v2
 
 ```
 CMP v1[literal|register] v2[register]
+```
+
+```
+CMPU v1[literal|register] v2[register]
 ```
 
 Sets the value of \$acc based on this chart
