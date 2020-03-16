@@ -99,6 +99,18 @@ class AsmParser extends CstParser {
       $.CONSUME2(allTokens.REG);
     });
 
+    $.RULE("binary", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.SRA) },
+        { ALT: () => $.CONSUME(allTokens.SLA) },
+        { ALT: () => $.CONSUME(allTokens.AND) },
+        { ALT: () => $.CONSUME(allTokens.OR) },
+        { ALT: () => $.CONSUME(allTokens.XOR) }
+      ]);
+      $.SUBRULE1($.reg_lit);
+      $.CONSUME2(allTokens.REG);
+    });
+
     $.RULE("statement", () => {
       $.OR([
         { ALT: () => $.SUBRULE($.mov) },
@@ -108,6 +120,7 @@ class AsmParser extends CstParser {
         { ALT: () => $.SUBRULE($.push) },
         { ALT: () => $.SUBRULE($.call) },
         { ALT: () => $.SUBRULE($.arithmetic) },
+        { ALT: () => $.SUBRULE($.binary) },
         { ALT: () => $.SUBRULE($.target) },
         { ALT: () => $.SUBRULE($.jump_not_equal) }
       ]);

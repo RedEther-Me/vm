@@ -311,15 +311,53 @@ export default parser => {
           if (ADD) return INSTRUCTIONS.ARITH_ADD_REG;
           if (SUB) return INSTRUCTIONS.ARITH_SUB_REG;
           if (MULT) return INSTRUCTIONS.ARITH_MULT;
-          if (DIV) return INSTRUCTIONS.ARITH_DIV;
-          if (CMP) return INSTRUCTIONS.CMP_REG;
+          if (DIV) return INSTRUCTIONS.ARITH_DIV_REG;
+          if (CMP) return INSTRUCTIONS.CMP_REG_REG;
         }
 
         if (ADD) return INSTRUCTIONS.ARITH_ADD_LIT;
         if (SUB) return INSTRUCTIONS.ARITH_SUB_LIT;
-        // if (MULT) return INSTRUCTIONS.ARITH_MULT;
-        // if (DIV) return INSTRUCTIONS.ARITH_DIV;
+        if (MULT) return INSTRUCTIONS.ARITH_MULT_LIT;
+        if (DIV) return INSTRUCTIONS.ARITH_DIV_LIT;
         if (CMP) return INSTRUCTIONS.CMP_LIT;
+      };
+
+      const { instruction, pattern } = opLookup();
+
+      const value = isReg
+        ? this.register(reg_lit[0].children.REG[0])
+        : this.literal(reg_lit[0].children.LITERAL[0]);
+
+      const fullInstruction = convertToInstruction(pattern, {
+        S: isReg ? value : undefined,
+        T: this.register(REG[0])
+      });
+
+      const extraInstruction = isReg ? [] : [i2s(value, 16)];
+
+      return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
+    }
+
+    binary(ctx) {
+      const { children } = ctx;
+      const { reg_lit, REG, SRA, SLA, AND, OR, XOR } = children;
+
+      const isReg = !!reg_lit[0].children.REG;
+
+      const opLookup = () => {
+        if (isReg) {
+          if (SRA) return INSTRUCTIONS.SRA_REG;
+          if (SLA) return INSTRUCTIONS.SLA_REG;
+          if (AND) return INSTRUCTIONS.AND_REG;
+          if (OR) return INSTRUCTIONS.OR_REG;
+          if (XOR) return INSTRUCTIONS.XOR_REG;
+        }
+
+        if (SRA) return INSTRUCTIONS.SRA_LIT;
+        if (SLA) return INSTRUCTIONS.SLA_LIT;
+        if (AND) return INSTRUCTIONS.AND_LIT;
+        if (OR) return INSTRUCTIONS.OR_LIT;
+        if (XOR) return INSTRUCTIONS.XOR_LIT;
       };
 
       const { instruction, pattern } = opLookup();

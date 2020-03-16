@@ -380,8 +380,14 @@ class CPU {
 
       case INSTRUCTIONS.ARITH_ADD_REG.instruction:
       case INSTRUCTIONS.ARITH_SUB_REG.instruction:
-      case INSTRUCTIONS.ARITH_MULT.instruction:
-      case INSTRUCTIONS.ARITH_DIV.instruction: {
+      case INSTRUCTIONS.ARITH_MULT_REG.instruction:
+      case INSTRUCTIONS.ARITH_DIV_REG.instruction:
+      case INSTRUCTIONS.CMP_REG.instruction:
+      case INSTRUCTIONS.SRA_REG.instruction:
+      case INSTRUCTIONS.SLA_REG.instruction:
+      case INSTRUCTIONS.AND_REG.instruction:
+      case INSTRUCTIONS.OR_REG.instruction:
+      case INSTRUCTIONS.XOR_REG.instruction: {
         const options = this.fetch();
 
         const { S, T } = convertFromInstruction(
@@ -391,76 +397,107 @@ class CPU {
         const v1 = this.registers.getUint16(S * 2);
         const v2 = this.registers.getUint16(T * 2);
 
+        let logInstruction;
+        let result;
         switch (instruction) {
           case INSTRUCTIONS.ARITH_ADD_REG.instruction: {
-            this.logger.log("ARITH_ADD_REG [v2 + v1]", {
-              v2: {
-                name: this.getName(T * 2),
-                value: v2
-              },
-              v1: {
-                name: this.getName(S * 2),
-                value: v1
-              },
-              result: v2 + v1
-            });
-            this.setRegisterByAddress(T * 2, v1 + v2);
-            return;
+            logInstruction = "ARITH_ADD_REG [v2 + v1]";
+            result = v2 + v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
           }
           case INSTRUCTIONS.ARITH_SUB_REG.instruction: {
-            this.logger.log("ARITH_SUB_REG [v2 - v1]", {
-              v2: {
-                name: this.getName(T * 2),
-                value: v2
-              },
-              v1: {
-                name: this.getName(S * 2),
-                value: v1
-              },
-              result: v2 - v1
-            });
-            this.setRegisterByAddress(T * 2, v2 - v1);
-            return;
+            logInstruction = "ARITH_SUB_REG [v2 - v1]";
+            result = v2 - v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
           }
-          case INSTRUCTIONS.ARITH_MULT.instruction: {
-            this.logger.log("ARITH_MULT_REG [v2 * v1]", {
-              v2: {
-                name: this.getName(T * 2),
-                value: v2
-              },
-              v1: {
-                name: this.getName(S * 2),
-                value: v1
-              },
-              result: v2 * v1
-            });
-            this.setRegisterByAddress(T * 2, v2 * v1);
-            return;
+          case INSTRUCTIONS.ARITH_MULT_REG.instruction: {
+            logInstruction = "ARITH_MULT_REG [v2 * v1]";
+            result = v2 * v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
           }
-          case INSTRUCTIONS.ARITH_DIV.instruction: {
-            this.logger.log("ARITH_DIV_REG [v2 / v1]", {
-              v2: {
-                name: this.getName(T * 2),
-                value: v2
-              },
-              v1: {
-                name: this.getName(S * 2),
-                value: v1
-              },
-              result: v2 / v1
-            });
-            this.setRegisterByAddress(T * 2, v2 / v1);
-            return;
+          case INSTRUCTIONS.ARITH_DIV_REG.instruction: {
+            logInstruction = "ARITH_DIV_REG [v2 / v1]";
+            result = v2 / v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.CMP_REG.instruction: {
+            logInstruction = "CMP_REG";
+            result = this.compInts(v1, v2);
+
+            this.setRegisterByName("acc", result);
+            break;
+          }
+          case INSTRUCTIONS.SRA_REG.instruction: {
+            logInstruction = "SRA_REG";
+            result = v2 >> v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.SLA_REG.instruction: {
+            logInstruction = "SLA_REG";
+            result = v2 << v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.AND_REG.instruction: {
+            logInstruction = "AND_REG";
+            result = v2 & v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.OR_REG.instruction: {
+            logInstruction = "OR_REG";
+            result = v2 | v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.XOR_REG.instruction: {
+            logInstruction = "XOR_REG";
+            result = v2 ^ v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
           }
           default:
             throw new Error("arithmetic: no valid operation");
         }
+
+        this.logger.log(instruction, {
+          v2: {
+            name: this.getName(T * 2),
+            value: v2
+          },
+          v1: {
+            value: v1
+          },
+          result: v2 + v1
+        });
+
+        return;
       }
 
       case INSTRUCTIONS.ARITH_ADD_LIT.instruction:
-      case INSTRUCTIONS.ARITH_SUB_LIT.instruction: {
-        // case INSTRUCTIONS.ARITH_MULT.instruction:
-        // case INSTRUCTIONS.ARITH_DIV.instruction: {
+      case INSTRUCTIONS.ARITH_SUB_LIT.instruction:
+      case INSTRUCTIONS.ARITH_MULT_LIT.instruction:
+      case INSTRUCTIONS.ARITH_DIV_LIT.instruction:
+      case INSTRUCTIONS.CMP_LIT.instruction:
+      case INSTRUCTIONS.SRA_LIT.instruction:
+      case INSTRUCTIONS.SLA_LIT.instruction:
+      case INSTRUCTIONS.AND_LIT.instruction:
+      case INSTRUCTIONS.OR_LIT.instruction:
+      case INSTRUCTIONS.XOR_LIT.instruction: {
         const options = this.fetch();
 
         const { T } = convertFromInstruction(
@@ -470,101 +507,95 @@ class CPU {
         const v1 = this.fetch16();
         const v2 = this.registers.getUint16(T * 2);
 
+        let logInstruction;
+        let result;
         switch (instruction) {
           case INSTRUCTIONS.ARITH_ADD_LIT.instruction: {
-            this.logger.log("ARITH_ADD_LIT [v2 + v1]", {
-              v2: {
-                name: this.getName(T * 2),
-                value: v2
-              },
-              v1: {
-                value: v1
-              },
-              result: v2 + v1
-            });
-            this.setRegisterByAddress(T * 2, v2 + v1);
-            return;
+            logInstruction = "ARITH_ADD_LIT [v2 + v1]";
+            result = v2 + v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
           }
           case INSTRUCTIONS.ARITH_SUB_LIT.instruction: {
-            this.logger.log("ARITH_SUB_LIT [v2 - v1]", {
-              v2: {
-                name: this.getName(T * 2),
-                value: v2
-              },
-              v1: {
-                value: v1
-              },
-              result: v2 - v1
-            });
+            logInstruction = "ARITH_SUB_LIT [v2 - v1]";
+            result = v2 - v1;
 
-            this.setRegisterByAddress(T * 2, v2 - v1);
-            return;
+            this.setRegisterByAddress(T * 2, result);
+            break;
           }
-          // case INSTRUCTIONS.ARITH_MULT.instruction: {
-          //   this.setRegisterByAddress(T * 2, v2 * v1);
-          //   return;
-          // }
-          // case INSTRUCTIONS.ARITH_DIV.instruction: {
-          //   this.setRegisterByAddress(T * 2, v2 / v1);
-          //   return;
-          // }
+          case INSTRUCTIONS.ARITH_MULT_LIT.instruction: {
+            logInstruction = "ARITH_MULT_LIT [v2 * v1]";
+            result = v2 * v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.ARITH_DIV_LIT.instruction: {
+            logInstruction = "ARITH_DIV_LIT [v2 / v1]";
+            result = v2 / v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.CMP_LIT.instruction: {
+            logInstruction = "CMP_LIT";
+            result = this.compInts(v1, v2);
+
+            this.setRegisterByName("acc", result);
+            break;
+          }
+          case INSTRUCTIONS.SRA_LIT.instruction: {
+            logInstruction = "SRA_LIT";
+            result = v2 >> v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.SLA_LIT.instruction: {
+            logInstruction = "SLA_LIT";
+            result = v2 << v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.AND_LIT.instruction: {
+            logInstruction = "AND_LIT";
+            result = v2 & v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.OR_LIT.instruction: {
+            logInstruction = "OR_LIT";
+            result = v2 | v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
+          case INSTRUCTIONS.XOR_LIT.instruction: {
+            logInstruction = "XOR_LIT";
+            result = v2 ^ v1;
+
+            this.setRegisterByAddress(T * 2, result);
+            break;
+          }
           default:
-            throw new Error("arithmetic: no valid operation");
+            throw new Error(
+              "arithmetic: no valid operation ",
+              instruction.toString(16).padStart(4, "0")
+            );
         }
-      }
 
-      case INSTRUCTIONS.CMP_LIT.instruction: {
-        const options = this.fetch();
-
-        const { T } = convertFromInstruction(
-          INSTRUCTIONS.CMP_LIT.pattern,
-          options
-        );
-
-        const v1 = this.fetch16();
-        const v2 = this.registers.getUint16(T * 2);
-
-        const result = this.compInts(v1, v2);
-        this.setRegisterByName("acc", result);
-
-        this.logger.log("CMP_LIT", {
-          source: {
-            value: v1
-          },
-          target: {
+        this.logger.log(logInstruction, {
+          v2: {
             name: this.getName(T * 2),
             value: v2
           },
-          result
-        });
-
-        return;
-      }
-
-      case INSTRUCTIONS.CMP_REG.instruction: {
-        const options = this.fetch();
-
-        const { S, T } = convertFromInstruction(
-          INSTRUCTIONS.CMP_REG.pattern,
-          options
-        );
-
-        const v1 = this.registers.getUint16(S * 2);
-        const v2 = this.registers.getUint16(T * 2);
-
-        const result = this.compInts(v1, v2);
-        this.setRegisterByName("acc", result);
-
-        this.logger.log("CMP_REG", {
-          source: {
-            name: this.getName(S * 2),
+          v1: {
             value: v1
           },
-          target: {
-            name: this.getName(T * 2),
-            value: v2
-          },
-          result
+          result: v2 + v1
         });
 
         return;

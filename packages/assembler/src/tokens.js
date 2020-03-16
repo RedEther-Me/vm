@@ -21,6 +21,12 @@ const MULT = createToken({ name: "MULT", pattern: /MULT/ });
 const DIV = createToken({ name: "DIV", pattern: /DIV/ });
 const CMP = createToken({ name: "CMP", pattern: /CMP/ });
 
+const SRA = createToken({ name: "SRA", pattern: /SRA/ });
+const SLA = createToken({ name: "SLA", pattern: /SLA/ });
+const AND = createToken({ name: "AND", pattern: /AND/ });
+const OR = createToken({ name: "OR", pattern: /OR/ });
+const XOR = createToken({ name: "XOR", pattern: /XOR/ });
+
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
 const REG = createToken({ name: "REG", pattern: /r[0-8]|acc|sp|fp/ });
@@ -66,6 +72,11 @@ export const orderedTokens = [
   MULT,
   DIV,
   CMP,
+  SRA,
+  SLA,
+  AND,
+  OR,
+  XOR,
   TERM,
   REG,
   HEX_VALUE,
