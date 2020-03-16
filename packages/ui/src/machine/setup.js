@@ -20,7 +20,7 @@ export const loadMedia = file => {
     const mm = new MemoryController();
     mm.map("memory", memory, 0, 0xffff);
 
-    const cpu = new CPU(mm);
+    const cpu = new CPU(mm, { logger: console });
 
     machine = {
       cpu,

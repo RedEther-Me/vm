@@ -4,9 +4,11 @@ import createMemory from "./memory.js";
 import INSTRUCTIONS from "./instructions.js";
 
 class CPU {
-  constructor(memory, debug) {
+  constructor(memory, options = {}) {
     this.memory = memory;
-    this.debug = debug;
+    this.options = options;
+
+    this.logger = options.logger || { log: () => {} };
 
     this.registerNames = [
       "ip",
@@ -195,7 +197,7 @@ class CPU {
         );
         const V = this.fetch16();
 
-        // console.log(`MOV ${T * 2} ${V}`);
+        // this.logger.log(`MOV ${T * 2} ${V}`);
 
         this.setRegisterByAddress(T * 2, V);
         return;
@@ -210,7 +212,9 @@ class CPU {
         );
 
         const V = this.registers.getUint16(S * 2);
-        console.log(`MOV ${this.getName(S * 2)} ${this.getName(T * 2)} ${V}`);
+        this.logger.log(
+          `MOV ${this.getName(S * 2)} ${this.getName(T * 2)} ${V}`
+        );
 
         this.setRegisterByAddress(T * 2, V);
         return;
@@ -250,7 +254,7 @@ class CPU {
         const value = this.fetch16();
         const address = this.fetch16();
 
-        console.log("STORE_LIT_HEX", {
+        this.logger.log("STORE_LIT_HEX", {
           value,
           address: `${address} 0x${address.toString(16)}`
         });
@@ -326,7 +330,7 @@ class CPU {
 
         const value = this.getMemoryByAddress(from);
 
-        console.log("COPY_MEM_REG_REG", {
+        this.logger.log("COPY_MEM_REG_REG", {
           from: {
             name: this.getName(S * 2),
             location: `${from} 0x${from.toString(16)}`,
@@ -389,7 +393,7 @@ class CPU {
 
         switch (instruction) {
           case INSTRUCTIONS.ARITH_ADD_REG.instruction: {
-            console.log("ARITH_ADD_REG [v2 + v1]", {
+            this.logger.log("ARITH_ADD_REG [v2 + v1]", {
               v2: {
                 name: this.getName(T * 2),
                 value: v2
@@ -404,7 +408,7 @@ class CPU {
             return;
           }
           case INSTRUCTIONS.ARITH_SUB_REG.instruction: {
-            console.log("ARITH_SUB_REG [v2 - v1]", {
+            this.logger.log("ARITH_SUB_REG [v2 - v1]", {
               v2: {
                 name: this.getName(T * 2),
                 value: v2
@@ -419,7 +423,7 @@ class CPU {
             return;
           }
           case INSTRUCTIONS.ARITH_MULT.instruction: {
-            console.log("ARITH_MULT_REG [v2 * v1]", {
+            this.logger.log("ARITH_MULT_REG [v2 * v1]", {
               v2: {
                 name: this.getName(T * 2),
                 value: v2
@@ -434,7 +438,7 @@ class CPU {
             return;
           }
           case INSTRUCTIONS.ARITH_DIV.instruction: {
-            console.log("ARITH_DIV_REG [v2 / v1]", {
+            this.logger.log("ARITH_DIV_REG [v2 / v1]", {
               v2: {
                 name: this.getName(T * 2),
                 value: v2
@@ -468,7 +472,7 @@ class CPU {
 
         switch (instruction) {
           case INSTRUCTIONS.ARITH_ADD_LIT.instruction: {
-            console.log("ARITH_ADD_LIT [v2 + v1]", {
+            this.logger.log("ARITH_ADD_LIT [v2 + v1]", {
               v2: {
                 name: this.getName(T * 2),
                 value: v2
@@ -482,7 +486,7 @@ class CPU {
             return;
           }
           case INSTRUCTIONS.ARITH_SUB_LIT.instruction: {
-            console.log("ARITH_SUB_LIT [v2 - v1]", {
+            this.logger.log("ARITH_SUB_LIT [v2 - v1]", {
               v2: {
                 name: this.getName(T * 2),
                 value: v2
@@ -523,7 +527,7 @@ class CPU {
         const result = this.compInts(v1, v2);
         this.setRegisterByName("acc", result);
 
-        console.log("CMP_LIT", {
+        this.logger.log("CMP_LIT", {
           source: {
             value: v1
           },
@@ -551,7 +555,7 @@ class CPU {
         const result = this.compInts(v1, v2);
         this.setRegisterByName("acc", result);
 
-        console.log("CMP_REG", {
+        this.logger.log("CMP_REG", {
           source: {
             name: this.getName(S * 2),
             value: v1
