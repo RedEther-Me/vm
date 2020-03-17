@@ -1,23 +1,23 @@
 absolute-value:
-	- absolute-value.asm
+  main: absolute-value.asm
 
 binary-test:
-	- binary-test.asm
+  main: binary-test.asm
 
 compare-test:
-	- compare-test.asm
+  main: compare-test.asm
 
 console-test:
-	- console-test.asm
+  main: console-test.asm
 
 example:
-	- example.asm
+  main: example.asm
 
 first-function:
-	- first-function.asm
+  main: first-function.asm
 
 jump-not-equal-test:
-	- jump-not-equal-test.asm
+  main: jump-not-equal-test.asm
 
 store-test:
-	- store-test.asm
+  main: store-test.asm

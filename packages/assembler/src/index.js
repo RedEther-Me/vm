@@ -25,11 +25,11 @@ function outputName(source, output) {
   return `${base}.bin`;
 }
 
-async function assemble(source, output) {
-  const input = await readFileAsync(source);
+async function assemble({ main, output, files }) {
+  const input = await readFileAsync(main);
   const result = await assembler(input);
 
-  await writeFileAsync(outputName(source, output), result);
+  await writeFileAsync(outputName(main, output), result);
 }
 
 async function runner() {
@@ -38,13 +38,19 @@ async function runner() {
   if (makefile) {
     const config = await yaml.read(`${makefile}/makefile`);
 
-    await Object.entries(config).reduce(async (prev, [key, files]) => {
-      await prev;
-      await assemble(`${makefile}/${key}/${files[0]}`);
-      return;
-    }, Promise.resolve());
+    await Object.entries(config).reduce(
+      async (prev, [key, { main, files = [] }]) => {
+        await prev;
+        await assemble({
+          main: `${makefile}/${key}/${main}`,
+          files: files.map(f => `${makefile}/${key}/${f}`)
+        });
+        return;
+      },
+      Promise.resolve()
+    );
   } else {
-    assemble(source, output);
+    assemble({ main: source, output });
   }
 }
 
