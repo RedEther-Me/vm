@@ -151,7 +151,7 @@ class AsmParser extends CstParser {
 
     $.RULE("byte", () => {
       $.CONSUME(allTokens.DT_BYTE);
-      $.MANY(() => $.CONSUME(allTokens.STRING));
+      $.MANY(() => $.CONSUME(allTokens.CHAR));
     });
 
     $.RULE("space", () => {

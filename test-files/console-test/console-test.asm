@@ -1,3 +1,5 @@
+.data
+  hello_world: .ascii "Hello World!"
 .code
   main:
     ## Call Clear Screen

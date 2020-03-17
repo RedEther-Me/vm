@@ -407,28 +407,51 @@ export default parser => {
       return this[command](ctx[command][0]);
     }
 
-    data() {
-      return [];
+    data(ctx) {
+      const segments = (ctx.segment || []).reduce(
+        (acc, segment) => [...acc, ...this.visit(segment)],
+        []
+      );
+
+      return [...segments];
     }
 
-    ascii() {
-      return [];
+    ascii(ctx) {
+      const image = ctx.STRING[0].image;
+      const value = image.substring(1, image.length - 1);
+
+      const vArr = [];
+
+      let i = 0;
+      for (i = 0; i < value.length; i += 1) {
+        if (value[i] === "\\") {
+          i += 1;
+        }
+        vArr.push(i2s(value[i].charCodeAt(0), 4));
+      }
+
+      return [vArr.join(""), vArr.length * 4];
     }
 
-    byte() {
-      return [];
+    byte(ctx) {
+      return [i2s(this.char(ctx.CHAR[0]), 8), 8];
     }
 
-    space() {
-      return [];
+    space(ctx) {
+      const size = parseInt(ctx.LITERAL[0].image, 10) * 4;
+      return [i2s(0, size), size];
     }
 
-    word() {
-      return [];
+    word(ctx) {
+      return [i2s(parseInt(ctx.LITERAL[0].image, 10), 16), 16];
     }
 
-    segment() {
-      return [];
+    segment(ctx) {
+      const { ascii, byte, space, word, LABEL } = ctx;
+
+      const [value, size] = this.visit(ascii || byte || space || word);
+
+      return [{ type: "data", name: LABEL[0].image, value, size }];
     }
 
     method(ctx) {
@@ -469,6 +492,8 @@ export default parser => {
     }
 
     program(ctx) {
+      const data = this.visit(ctx.data) || [];
+
       const main = this.visit(ctx.main);
 
       const methods = (ctx.method || []).reduce(
@@ -476,7 +501,7 @@ export default parser => {
         []
       );
 
-      const preprocess = [...main, ...methods];
+      const preprocess = [...data, ...main, ...methods];
       const postprocess = postProcessor(preprocess);
       return postprocess.join("");
     }
