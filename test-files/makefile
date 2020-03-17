@@ -19,5 +19,8 @@ first-function:
 jump-not-equal-test:
   main: jump-not-equal-test.asm
 
+load-data-test:
+  main: load-data-test.asm
+
 store-test:
   main: store-test.asm

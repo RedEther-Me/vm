@@ -144,9 +144,40 @@ class AsmParser extends CstParser {
       $.CONSUME(allTokens.RET);
     });
 
+    $.RULE("ascii", () => {
+      $.CONSUME(allTokens.DT_ASCII);
+      $.CONSUME(allTokens.STRING);
+    });
+
+    $.RULE("byte", () => {
+      $.CONSUME(allTokens.DT_BYTE);
+      $.MANY(() => $.CONSUME(allTokens.STRING));
+    });
+
+    $.RULE("space", () => {
+      $.CONSUME(allTokens.DT_SPACE);
+      $.CONSUME(allTokens.LITERAL);
+    });
+
+    $.RULE("word", () => {
+      $.CONSUME(allTokens.DT_WORD);
+      $.MANY(() => $.CONSUME(allTokens.LITERAL));
+    });
+
+    $.RULE("segment", () => {
+      $.CONSUME(allTokens.LABEL);
+      $.CONSUME(allTokens.COLON);
+      $.OR([
+        { ALT: () => $.SUBRULE($.ascii) },
+        { ALT: () => $.SUBRULE($.byte) },
+        { ALT: () => $.SUBRULE($.space) },
+        { ALT: () => $.SUBRULE($.word) }
+      ]);
+    });
+
     $.RULE("data", () => {
       $.CONSUME(allTokens.DATA);
-      $.CONSUME(allTokens.COLON);
+      $.MANY(() => $.SUBRULE($.segment));
     });
 
     $.RULE("main", () => {
@@ -160,6 +191,7 @@ class AsmParser extends CstParser {
       $.OPTION(() => {
         $.SUBRULE($.data);
       });
+      $.CONSUME(allTokens.CODE);
       $.SUBRULE($.main);
       $.MANY(() => $.SUBRULE($.method));
     });

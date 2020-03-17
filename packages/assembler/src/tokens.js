@@ -39,12 +39,34 @@ const CHAR = createToken({
   name: "CHAR",
   pattern: /\'[\\A-Za-z\'"\-,.:;?!@#$%^&*(){}\[\] ]\'/
 });
+const STRING = createToken({
+  name: "STRING",
+  pattern: /\"[\\A-Za-z\'"\-,.:;?!@#$%^&*(){}\[\] ]*\"/
+});
 
 // tags
 const COLON = createToken({ name: "COLON", pattern: /:/ });
 const MAIN = createToken({ name: "MAIN", pattern: /main/ });
-const DATA = createToken({ name: "DATA", pattern: /data/ });
-const LABEL = createToken({ name: "LABEL", pattern: /[a-zA-Z]+[a-zA-Z0-9]*/ });
+const DATA = createToken({ name: "DATA", pattern: /\.data/ });
+const CODE = createToken({ name: "CODE", pattern: /\.code/ });
+const DT_ASCII = createToken({
+  name: "DT_ASCII",
+  pattern: /\.ascii/
+});
+const DT_BYTE = createToken({
+  name: "DT_BYTE",
+  pattern: /\.byte/
+});
+const DT_SPACE = createToken({
+  name: "DT_SPACE",
+  pattern: /\.space/
+});
+const DT_WORD = createToken({
+  name: "DT_WORD",
+  pattern: /\.word/
+});
+
+const LABEL = createToken({ name: "LABEL", pattern: /[a-zA-Z]+[a-zA-Z0-9_]*/ });
 
 const COMMENT = createToken({
   name: "COMMENT",
@@ -85,10 +107,16 @@ export const orderedTokens = [
   REG,
   HEX_VALUE,
   CHAR,
+  STRING,
   LITERAL,
   COLON,
   MAIN,
   DATA,
+  CODE,
+  DT_ASCII,
+  DT_BYTE,
+  DT_SPACE,
+  DT_WORD,
   LABEL
 ];
 

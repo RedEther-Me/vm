@@ -411,6 +411,26 @@ export default parser => {
       return [];
     }
 
+    ascii() {
+      return [];
+    }
+
+    byte() {
+      return [];
+    }
+
+    space() {
+      return [];
+    }
+
+    word() {
+      return [];
+    }
+
+    segment() {
+      return [];
+    }
+
     method(ctx) {
       const { target, RET } = ctx;
 
