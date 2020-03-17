@@ -25,12 +25,16 @@ export default program => {
       }
 
       if (isTypeOf(item, "data")) {
-        return { ...map, [countKey]: map[countKey] + item.size };
+        return {
+          ...map,
+          [item.name]: map[countKey],
+          [countKey]: map[countKey] + item.size / 8
+        };
       }
 
       return { ...map, [countKey]: map[countKey] + item.length / 8 };
     },
-    { [countKey]: 0 }
+    { [countKey]: 2 }
   );
 
   const replaced = program.map(item => {

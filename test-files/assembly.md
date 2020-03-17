@@ -1,7 +1,7 @@
 # MOV
 
 ```
-MOV value[literal|hex|char] register
+MOV value[literal|hex|char|label] register
 ```
 
 # MEMORY
@@ -21,7 +21,7 @@ COPY from[hex|register] to[hex|register]
 # STACK
 
 ```
-PUSH value[literal|hex|char|(register)]
+PUSH value[literal|hex|char|register]
 ```
 
 ```

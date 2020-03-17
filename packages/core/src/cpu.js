@@ -730,6 +730,10 @@ class CPU {
 
         this.pushState();
         this.setRegisterByName("ip", address);
+
+        this.logger.log("CAL_LIT", {
+          address
+        });
         return;
       }
 
@@ -745,6 +749,10 @@ class CPU {
         const address = this.registers.getUint16(R);
         this.pushState();
         this.setRegisterByName("ip", address);
+
+        this.logger.log("CAL_LIT", {
+          address
+        });
         return;
       }
 
@@ -756,14 +764,21 @@ class CPU {
 
       default: {
         throw new Error(
-          `Illegal Instruction: ${instruction.toString(16).padStart(2)}`
+          `Illegal Instruction: 0x${instruction.toString(16).padStart(2)}`
         );
       }
     }
   }
 
   step() {
+    if (this.getRegister("ip") === 0x0) {
+      const firstInstruction = this.fetch16();
+
+      this.setRegisterByName("ip", firstInstruction);
+    }
+
     const instruction = this.fetch();
+
     return this.execute(instruction);
   }
 

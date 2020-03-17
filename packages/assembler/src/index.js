@@ -41,6 +41,7 @@ async function runner() {
     await Object.entries(config).reduce(
       async (prev, [key, { main, files = [] }]) => {
         await prev;
+        console.log(`${makefile}/${key}/${main}`);
         await assemble({
           main: `${makefile}/${key}/${main}`,
           files: files.map(f => `${makefile}/${key}/${f}`)

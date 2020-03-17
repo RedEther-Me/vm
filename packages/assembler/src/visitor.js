@@ -57,6 +57,10 @@ export default parser => {
       return ctx.image.charCodeAt(1);
     }
 
+    reg_lit_hex_char_label() {
+      return [];
+    }
+
     reg_lit_hex_char() {
       return [];
     }
@@ -92,6 +96,19 @@ export default parser => {
       return this.literal(LITERAL[0]);
     }
 
+    hexOrLitOrCharOrLabel(children) {
+      const { LABEL } = children;
+
+      if (LABEL) {
+        return {
+          value: { type: "address", name: LABEL[0].image },
+          isLabel: true
+        };
+      }
+
+      return { value: this.hexOrLitOrChar(children) };
+    }
+
     register(ctx) {
       const name = ctx.image;
       return registerLookup[name];
@@ -99,20 +116,22 @@ export default parser => {
 
     mov(ctx) {
       const { children } = ctx;
-      const { REG, reg_lit_hex_char } = children;
+      const { REG, reg_lit_hex_char_label } = children;
 
-      if (reg_lit_hex_char[0].children.REG) {
+      if (reg_lit_hex_char_label[0].children.REG) {
         const { instruction, pattern } = INSTRUCTIONS.MOV_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_lit_hex_char[0].children.REG[0]),
+          S: this.register(reg_lit_hex_char_label[0].children.REG[0]),
           T: this.register(REG[0])
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
+      const { isLabel, value } = this.hexOrLitOrCharOrLabel(
+        reg_lit_hex_char_label[0].children
+      );
 
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
@@ -120,7 +139,11 @@ export default parser => {
         T: this.register(REG[0])
       });
 
-      return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
+      return [
+        i2s(instruction),
+        i2s(fullInstruction),
+        isLabel ? value : i2s(value, 16)
+      ];
     }
 
     load(ctx) {
@@ -427,10 +450,12 @@ export default parser => {
         if (value[i] === "\\") {
           i += 1;
         }
-        vArr.push(i2s(value[i].charCodeAt(0), 4));
+
+        vArr.push(i2s(value[i].charCodeAt(0), 16));
       }
 
-      return [vArr.join(""), vArr.length * 4];
+      const joined = vArr.join("");
+      return [joined, joined.length];
     }
 
     byte(ctx) {
