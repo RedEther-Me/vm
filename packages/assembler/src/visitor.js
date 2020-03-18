@@ -283,21 +283,21 @@ export default parser => {
     push(ctx) {
       const { reg_lit_hex_char } = ctx.children;
 
-      if (reg_lit_hex_char[0].children.REG) {
+      const { isRegister, value } = this.reg_lit_hex_char(reg_lit_hex_char[0]);
+
+      if (isRegister) {
         const { instruction, pattern } = INSTRUCTIONS.PSH_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          R: this.register(reg_lit_hex_char[0]).value
+          R: value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const { value: maybeValue } = this.lit_hex_char(reg_lit_hex_char[0]);
-
       const { instruction } = INSTRUCTIONS.PSH_LIT;
 
-      return [i2s(instruction), i2s(maybeValue, 16)];
+      return [i2s(instruction), i2s(value, 16)];
     }
 
     pop(ctx) {
