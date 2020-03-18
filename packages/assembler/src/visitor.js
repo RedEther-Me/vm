@@ -231,52 +231,53 @@ export default parser => {
       const { children } = ctx;
       const { reg_hex } = children;
 
-      const first = reg_hex[0].children;
-      const second = reg_hex[1].children;
+      const {
+        isHex: sourceIsHex,
+        isRegister: sourceIsReg,
+        value: sourceValue
+      } = this.reg_hex(reg_hex[0]);
+      const {
+        isHex: targetIsHex,
+        isRegister: targetIsReg,
+        value: targetValue
+      } = this.reg_hex(reg_hex[1]);
 
       // Both are HEX
-      if (first.HEX_VALUE && second.HEX_VALUE) {
+      if (sourceIsHex && targetIsHex) {
         const { instruction } = INSTRUCTIONS.COPY_HEX_HEX;
 
-        const { value: from } = this.hex(first.HEX_VALUE[0]);
-        const { value: to } = this.hex(second.HEX_VALUE[0]);
-
-        return [i2s(instruction), i2s(from, 16), i2s(to, 16)];
+        return [i2s(instruction), i2s(sourceValue, 16), i2s(targetValue, 16)];
       }
 
       // Both are REG
-      if (first.REG && second.REG) {
+      if (sourceIsReg && targetIsReg) {
         const { instruction, pattern } = INSTRUCTIONS.COPY_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_hex[0]).value,
-          T: this.register(reg_hex[1]).value
+          S: sourceValue,
+          T: targetValue
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      if (first.REG && second.HEX_VALUE) {
+      if (sourceIsReg && targetIsHex) {
         const { instruction, pattern } = INSTRUCTIONS.COPY_REG_HEX;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_hex[0]).value
+          S: sourceValue
         });
 
-        const { value: to } = this.hex(second.HEX_VALUE[0]);
-
-        return [i2s(instruction), i2s(fullInstruction), i2s(to, 16)];
+        return [i2s(instruction), i2s(fullInstruction), i2s(targetValue, 16)];
       }
 
       const { instruction, pattern } = INSTRUCTIONS.COPY_HEX_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(reg_hex[1]).value
+        T: targetValue
       });
 
-      const { value: from } = this.hex(first.HEX_VALUE[0]);
-
-      return [i2s(instruction), i2s(fullInstruction), i2s(from, 16)];
+      return [i2s(instruction), i2s(fullInstruction), i2s(sourceValue, 16)];
     }
 
     push(ctx) {
