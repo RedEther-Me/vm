@@ -64,8 +64,17 @@ export default parser => {
       return [];
     }
 
-    lit_hex_char() {
-      return [];
+    lit_hex_char(ctx) {
+      const { HEX_VALUE, LITERAL, CHAR } = ctx.children;
+      if (HEX_VALUE) {
+        return this.hex(HEX_VALUE[0]);
+      }
+
+      if (CHAR) {
+        return { value: this.char(CHAR[0]), isChar: true };
+      }
+
+      return this.literal(LITERAL[0]);
     }
 
     reg_lit(ctx) {
@@ -88,19 +97,6 @@ export default parser => {
       return this.register(REG[0]);
     }
 
-    hexOrLitOrChar(children) {
-      const { HEX_VALUE, LITERAL, CHAR } = children;
-      if (HEX_VALUE) {
-        return this.hex(HEX_VALUE[0]).value;
-      }
-
-      if (CHAR) {
-        return this.char(CHAR[0]);
-      }
-
-      return this.literal(LITERAL[0]).value;
-    }
-
     hexOrLitOrCharOrLabel(children) {
       const { LABEL } = children;
 
@@ -111,7 +107,7 @@ export default parser => {
         };
       }
 
-      return { value: this.hexOrLitOrChar(children) };
+      return this.lit_hex_char({ children });
     }
 
     register(ctx) {
@@ -196,7 +192,7 @@ export default parser => {
 
         const { instruction } = INSTRUCTIONS.STORE_LIT_HEX;
 
-        const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
+        const { value } = this.lit_hex_char(reg_lit_hex_char[0]);
 
         return [i2s(instruction), i2s(value, 16), i2s(address, 16)];
       }
@@ -218,7 +214,7 @@ export default parser => {
         T: this.register(reg_hex[0].children.REG[0]).value
       });
 
-      const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
+      const { value } = this.lit_hex_char(reg_lit_hex_char[0]);
 
       return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
     }
@@ -288,7 +284,7 @@ export default parser => {
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const maybeValue = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
+      const { value: maybeValue } = this.lit_hex_char(reg_lit_hex_char[0]);
 
       const { instruction } = INSTRUCTIONS.PSH_LIT;
 
