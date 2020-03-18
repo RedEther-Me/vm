@@ -38,15 +38,14 @@ export default parser => {
       const test = parseInt(ctx.image, 10);
 
       if (test < 0) {
-        // return (1 << 15) | Math.abs(test);
-        return (test >>> 0) & 0xffff;
+        return { value: (test >>> 0) & 0xffff, isLiteral: true };
       }
 
-      return test;
+      return { value: test, isLiteral: true };
     }
 
     hex(ctx) {
-      return parseInt(ctx.image, 16);
+      return { value: parseInt(ctx.image, 16), isHex: true };
     }
 
     char(ctx) {
@@ -69,8 +68,14 @@ export default parser => {
       return [];
     }
 
-    reg_lit() {
-      return [];
+    reg_lit(ctx) {
+      const { LITERAL, REG } = ctx.children;
+
+      if (LITERAL) {
+        return this.literal(LITERAL[0]);
+      }
+
+      return this.register(REG[0]);
     }
 
     reg_hex() {
@@ -86,14 +91,14 @@ export default parser => {
     hexOrLitOrChar(children) {
       const { HEX_VALUE, LITERAL, CHAR } = children;
       if (HEX_VALUE) {
-        return this.hex(HEX_VALUE[0]);
+        return this.hex(HEX_VALUE[0]).value;
       }
 
       if (CHAR) {
         return this.char(CHAR[0]);
       }
 
-      return this.literal(LITERAL[0]);
+      return this.literal(LITERAL[0]).value;
     }
 
     hexOrLitOrCharOrLabel(children) {
@@ -111,7 +116,7 @@ export default parser => {
 
     register(ctx) {
       const name = ctx.image;
-      return registerLookup[name];
+      return { value: registerLookup[name], isRegister: true };
     }
 
     mov(ctx) {
@@ -122,8 +127,8 @@ export default parser => {
         const { instruction, pattern } = INSTRUCTIONS.MOV_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_lit_hex_char_label[0].children.REG[0]),
-          T: this.register(REG[0])
+          S: this.register(reg_lit_hex_char_label[0].children.REG[0]).value,
+          T: this.register(REG[0]).value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
@@ -136,7 +141,7 @@ export default parser => {
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(REG[0])
+        T: this.register(REG[0]).value
       });
 
       return [
@@ -154,10 +159,10 @@ export default parser => {
         const { instruction, pattern } = INSTRUCTIONS.LOAD_ADR;
 
         const fullInstruction = convertToInstruction(pattern, {
-          T: this.register(REG[0])
+          T: this.register(REG[0]).value
         });
 
-        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]);
+        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]).value;
 
         return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
       }
@@ -165,8 +170,8 @@ export default parser => {
       const { instruction, pattern } = INSTRUCTIONS.LOAD_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(REG[0]),
-        S: this.register(reg_hex[0].children.REG[0])
+        T: this.register(REG[0]).value,
+        S: this.register(reg_hex[0].children.REG[0]).value
       });
 
       return [i2s(instruction), i2s(fullInstruction)];
@@ -177,13 +182,13 @@ export default parser => {
       const { reg_lit_hex_char, reg_hex } = children;
 
       if (reg_hex[0].children.HEX_VALUE) {
-        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]);
+        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]).value;
 
         if (reg_lit_hex_char[0].children.REG) {
           const { instruction, pattern } = INSTRUCTIONS.STORE_REG_HEX;
 
           const fullInstruction = convertToInstruction(pattern, {
-            S: this.register(reg_lit_hex_char[0].children.REG[0])
+            S: this.register(reg_lit_hex_char[0].children.REG[0]).value
           });
 
           return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
@@ -200,8 +205,8 @@ export default parser => {
         const { instruction, pattern } = INSTRUCTIONS.STORE_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_lit_hex_char[0].children.REG[0]),
-          T: this.register(reg_hex[0].children.REG[0])
+          S: this.register(reg_lit_hex_char[0].children.REG[0]).value,
+          T: this.register(reg_hex[0].children.REG[0]).value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
@@ -210,7 +215,7 @@ export default parser => {
       const { instruction, pattern } = INSTRUCTIONS.STORE_LIT_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(reg_hex[0].children.REG[0])
+        T: this.register(reg_hex[0].children.REG[0]).value
       });
 
       const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
@@ -229,8 +234,8 @@ export default parser => {
       if (first.HEX_VALUE && second.HEX_VALUE) {
         const { instruction } = INSTRUCTIONS.COPY_HEX_HEX;
 
-        const from = this.hex(first.HEX_VALUE[0]);
-        const to = this.hex(second.HEX_VALUE[0]);
+        const { value: from } = this.hex(first.HEX_VALUE[0]);
+        const { value: to } = this.hex(second.HEX_VALUE[0]);
 
         return [i2s(instruction), i2s(from, 16), i2s(to, 16)];
       }
@@ -240,8 +245,8 @@ export default parser => {
         const { instruction, pattern } = INSTRUCTIONS.COPY_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(first.REG[0]),
-          T: this.register(second.REG[0])
+          S: this.register(first.REG[0]).value,
+          T: this.register(second.REG[0]).value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
@@ -251,10 +256,10 @@ export default parser => {
         const { instruction, pattern } = INSTRUCTIONS.COPY_REG_HEX;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(first.REG[0])
+          S: this.register(first.REG[0]).value
         });
 
-        const to = this.hex(second.HEX_VALUE[0]);
+        const { value: to } = this.hex(second.HEX_VALUE[0]);
 
         return [i2s(instruction), i2s(fullInstruction), i2s(to, 16)];
       }
@@ -262,10 +267,10 @@ export default parser => {
       const { instruction, pattern } = INSTRUCTIONS.COPY_HEX_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(second.REG[0])
+        T: this.register(second.REG[0]).value
       });
 
-      const from = this.hex(first.HEX_VALUE[0]);
+      const { value: from } = this.hex(first.HEX_VALUE[0]);
 
       return [i2s(instruction), i2s(fullInstruction), i2s(from, 16)];
     }
@@ -277,7 +282,7 @@ export default parser => {
         const { instruction, pattern } = INSTRUCTIONS.PSH_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          R: this.register(reg_lit_hex_char[0].children.REG[0])
+          R: this.register(reg_lit_hex_char[0].children.REG[0]).value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
@@ -296,7 +301,7 @@ export default parser => {
       const { instruction, pattern } = INSTRUCTIONS.POP;
 
       const fullInstruction = convertToInstruction(pattern, {
-        R: this.register(REG[0])
+        R: this.register(REG[0]).value
       });
 
       return [i2s(instruction), i2s(fullInstruction)];
@@ -314,13 +319,14 @@ export default parser => {
 
       if (HEX_VALUE) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
-        return [i2s(instruction), i2s(this.hex(HEX_VALUE[0]), 16)];
+        const { value } = this.hex(HEX_VALUE[0]);
+        return [i2s(instruction), i2s(value, 16)];
       }
 
       const { instruction, pattern } = INSTRUCTIONS.CAL_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        R: this.register(REG[0])
+        R: this.register(REG[0]).value
       });
 
       // TODO: Load arguments into registers 0-8
@@ -372,13 +378,11 @@ export default parser => {
 
       const { instruction, pattern } = opLookup();
 
-      const value = isReg
-        ? this.register(reg_lit[0].children.REG[0])
-        : this.literal(reg_lit[0].children.LITERAL[0]);
+      const { value } = this.reg_lit(reg_lit[0]);
 
       const fullInstruction = convertToInstruction(pattern, {
         S: isReg ? value : undefined,
-        T: this.register(REG[0])
+        T: this.register(REG[0]).value
       });
 
       const extraInstruction = isReg ? [] : [i2s(value, 16)];
@@ -410,13 +414,11 @@ export default parser => {
 
       const { instruction, pattern } = opLookup();
 
-      const value = isReg
-        ? this.register(reg_lit[0].children.REG[0])
-        : this.literal(reg_lit[0].children.LITERAL[0]);
+      const { value } = this.reg_lit(reg_lit[0]);
 
       const fullInstruction = convertToInstruction(pattern, {
         S: isReg ? value : undefined,
-        T: this.register(REG[0])
+        T: this.register(REG[0]).value
       });
 
       const extraInstruction = isReg ? [] : [i2s(value, 16)];
@@ -463,12 +465,16 @@ export default parser => {
     }
 
     space(ctx) {
-      const size = parseInt(ctx.LITERAL[0].image, 10) * 4;
+      const { value } = this.literal(ctx.LITERAL[0]);
+      const size = value * 4;
+
       return [i2s(0, size), size];
     }
 
     word(ctx) {
-      return [i2s(parseInt(ctx.LITERAL[0].image, 10), 16), 16];
+      const { value } = this.literal(ctx.LITERAL[0]);
+
+      return [i2s(value, 16), 16];
     }
 
     segment(ctx) {

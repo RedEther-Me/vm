@@ -1,5 +1,7 @@
 .data
   hello_world: .ascii "Hello World!"
+  positive_num: .word 12345
+  negative_num: .word -10
 
 .code
   main:
@@ -8,21 +10,8 @@
     CALL clearScreen
 
     ## Call Print 'Hello World'
-    ## STORE 'H' 0x1000
-    ## STORE 'e' 0x1002
-    ## STORE 'l' 0x1004
-    ## STORE 'l' 0x1006
-    ## STORE 'o' 0x1008
-    ## STORE ' ' 0x100a
-    ## STORE 'W' 0x100c
-    ## STORE 'o' 0x100e
-    ## STORE 'r' 0x1010
-    ## STORE 'l' 0x1012
-    ## STORE 'd' 0x1014
-    ## STORE '!' 0x1016
 
     MOV hello_world r1
-
     PUSH r1
     PUSH 12
     PUSH 2
@@ -34,12 +23,17 @@
     CALL println
 
     ## Call Print Number
-    PUSH 12345
+    MOV positive_num r1
+    LOAD r1 r1
+    PUSH r1
     PUSH 1
     CALL printNum
 
     ## Call Print Negative Number
-    PUSH -10
+    MOV negative_num r1
+    LOAD r1 r1
+    ## PUSH -10
+    PUSH r1
     PUSH 1
     CALL printNum
 

@@ -786,7 +786,8 @@ class CPU {
     const halt = this.step();
 
     if (halt !== -1) {
-      setImmediate(() => this.run());
+      // setImmediate(() => this.run());
+      this.run();
     }
   }
 
