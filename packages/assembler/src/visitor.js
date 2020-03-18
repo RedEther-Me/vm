@@ -34,6 +34,15 @@ export default parser => {
       return {};
     }
 
+    label(ctx) {
+      const { LABEL } = ctx.children;
+
+      return {
+        value: { type: "address", name: LABEL[0].image },
+        isLabel: true
+      };
+    }
+
     literal(ctx) {
       const test = parseInt(ctx.image, 10);
 
@@ -60,10 +69,7 @@ export default parser => {
       const { LABEL } = ctx.children;
 
       if (LABEL) {
-        return {
-          value: { type: "address", name: LABEL[0].image },
-          isLabel: true
-        };
+        return this.label(ctx);
       }
 
       return this.reg_lit_hex_char(ctx);
@@ -353,11 +359,11 @@ export default parser => {
     }
 
     jump_not_equal(ctx) {
-      const { LABEL } = ctx.children;
+      const { value } = this.label(ctx);
 
       const { instruction } = INSTRUCTIONS.JMP_NOT_EQ;
 
-      return [i2s(instruction), { type: "address", name: LABEL[0].image }];
+      return [i2s(instruction), value];
     }
 
     arithmetic(ctx) {
