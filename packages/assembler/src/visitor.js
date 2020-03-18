@@ -370,10 +370,10 @@ export default parser => {
       const { children } = ctx;
       const { reg_lit, ADD, SUB, DIV, MULT, MOD, CMP } = children;
 
-      const isReg = !!reg_lit[0].children.REG;
+      const { isRegister, value } = this.reg_lit(reg_lit[0]);
 
       const opLookup = () => {
-        if (isReg) {
+        if (isRegister) {
           if (ADD && ADD[0].image === "ADD") return INSTRUCTIONS.ADD_REG;
           if (ADD && ADD[0].image === "ADDU") return INSTRUCTIONS.ADDU_REG;
           if (SUB) return INSTRUCTIONS.SUB_REG;
@@ -396,14 +396,12 @@ export default parser => {
 
       const { instruction, pattern } = opLookup();
 
-      const { value } = this.reg_lit(reg_lit[0]);
-
       const fullInstruction = convertToInstruction(pattern, {
-        S: isReg ? value : undefined,
+        S: isRegister ? value : undefined,
         T: this.register(ctx).value
       });
 
-      const extraInstruction = isReg ? [] : [i2s(value, 16)];
+      const extraInstruction = isRegister ? [] : [i2s(value, 16)];
 
       return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
     }
@@ -412,10 +410,10 @@ export default parser => {
       const { children } = ctx;
       const { reg_lit, SRA, SLA, AND, OR, XOR } = children;
 
-      const isReg = !!reg_lit[0].children.REG;
+      const { isRegister, value } = this.reg_lit(reg_lit[0]);
 
       const opLookup = () => {
-        if (isReg) {
+        if (isRegister) {
           if (SRA) return INSTRUCTIONS.SRA_REG;
           if (SLA) return INSTRUCTIONS.SLA_REG;
           if (AND) return INSTRUCTIONS.AND_REG;
@@ -432,14 +430,12 @@ export default parser => {
 
       const { instruction, pattern } = opLookup();
 
-      const { value } = this.reg_lit(reg_lit[0]);
-
       const fullInstruction = convertToInstruction(pattern, {
-        S: isReg ? value : undefined,
+        S: isRegister ? value : undefined,
         T: this.register(ctx).value
       });
 
-      const extraInstruction = isReg ? [] : [i2s(value, 16)];
+      const extraInstruction = isRegister ? [] : [i2s(value, 16)];
 
       return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
     }
