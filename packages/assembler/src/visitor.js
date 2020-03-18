@@ -56,8 +56,17 @@ export default parser => {
       return ctx.image.charCodeAt(1);
     }
 
-    reg_lit_hex_char_label() {
-      return [];
+    reg_lit_hex_char_label(ctx) {
+      const { LABEL } = ctx.children;
+
+      if (LABEL) {
+        return {
+          value: { type: "address", name: LABEL[0].image },
+          isLabel: true
+        };
+      }
+
+      return this.lit_hex_char(ctx);
     }
 
     reg_lit_hex_char() {
@@ -97,19 +106,6 @@ export default parser => {
       return this.register(REG[0]);
     }
 
-    hexOrLitOrCharOrLabel(children) {
-      const { LABEL } = children;
-
-      if (LABEL) {
-        return {
-          value: { type: "address", name: LABEL[0].image },
-          isLabel: true
-        };
-      }
-
-      return this.lit_hex_char({ children });
-    }
-
     register(ctx) {
       const name = ctx.image;
       return { value: registerLookup[name], isRegister: true };
@@ -130,8 +126,8 @@ export default parser => {
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const { isLabel, value } = this.hexOrLitOrCharOrLabel(
-        reg_lit_hex_char_label[0].children
+      const { isLabel, value } = this.reg_lit_hex_char_label(
+        reg_lit_hex_char_label[0]
       );
 
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
