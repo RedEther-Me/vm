@@ -66,11 +66,17 @@ export default parser => {
         };
       }
 
-      return this.lit_hex_char(ctx);
+      return this.reg_lit_hex_char(ctx);
     }
 
-    reg_lit_hex_char() {
-      return [];
+    reg_lit_hex_char(ctx) {
+      const { REG } = ctx.children;
+
+      if (REG) {
+        return this.register(REG[0]);
+      }
+
+      return this.lit_hex_char(ctx);
     }
 
     lit_hex_char(ctx) {
@@ -115,20 +121,22 @@ export default parser => {
       const { children } = ctx;
       const { REG, reg_lit_hex_char_label } = children;
 
-      if (reg_lit_hex_char_label[0].children.REG) {
+      const {
+        isLabel,
+        isRegister,
+        value: sourceValue
+      } = this.reg_lit_hex_char_label(reg_lit_hex_char_label[0]);
+
+      if (isRegister) {
         const { instruction, pattern } = INSTRUCTIONS.MOV_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_lit_hex_char_label[0].children.REG[0]).value,
+          S: sourceValue,
           T: this.register(REG[0]).value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
-
-      const { isLabel, value } = this.reg_lit_hex_char_label(
-        reg_lit_hex_char_label[0]
-      );
 
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
@@ -139,7 +147,7 @@ export default parser => {
       return [
         i2s(instruction),
         i2s(fullInstruction),
-        isLabel ? value : i2s(value, 16)
+        isLabel ? sourceValue : i2s(sourceValue, 16)
       ];
     }
 
