@@ -102,6 +102,17 @@ export default parser => {
       return this.register(ctx);
     }
 
+    reg_hex_label(ctx) {
+      const { LABEL } = ctx.children;
+
+      if (LABEL) {
+        return {
+          value: { type: "address", name: LABEL[0].image },
+          isLabel: true
+        };
+      }
+    }
+
     reg_hex(ctx) {
       const { HEX_VALUE } = ctx.children;
 
@@ -311,28 +322,26 @@ export default parser => {
     }
 
     call(ctx) {
-      const { LABEL, reg_hex } = ctx.children;
+      const { reg_hex_label } = ctx.children;
 
-      if (LABEL) {
+      const { isLabel, isHex, value } = this.reg_hex_label(reg_hex_label[0]);
+
+      if (isLabel) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
-        return [i2s(instruction), { type: "address", name: LABEL[0].image }];
+        return [i2s(instruction), value];
       }
 
-      const { HEX_VALUE } = reg_hex[0].children;
-
-      if (HEX_VALUE) {
+      if (isHex) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
-        const { value } = this.hex(HEX_VALUE[0]);
+
         return [i2s(instruction), i2s(value, 16)];
       }
 
       const { instruction, pattern } = INSTRUCTIONS.CAL_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        R: this.register(reg_hex[0]).value
+        R: value
       });
-
-      // TODO: Load arguments into registers 0-8
 
       return [i2s(instruction), i2s(fullInstruction)];
     }

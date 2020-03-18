@@ -37,6 +37,14 @@ class AsmParser extends CstParser {
       ]);
     });
 
+    $.RULE("reg_hex_label", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.LABEL) }
+      ]);
+    });
+
     $.RULE("reg_hex", () => {
       $.OR([
         { ALT: () => $.CONSUME(allTokens.REG) },
@@ -91,10 +99,7 @@ class AsmParser extends CstParser {
 
     $.RULE("call", () => {
       $.CONSUME(allTokens.CALL);
-      $.OR([
-        { ALT: () => $.CONSUME(allTokens.LABEL) },
-        { ALT: () => $.SUBRULE2($.reg_hex) }
-      ]);
+      $.SUBRULE2($.reg_hex_label);
     });
 
     $.RULE("jump_not_equal", () => {
