@@ -10,6 +10,16 @@ class AsmParser extends CstParser {
 
     const $ = this;
 
+    $.RULE("reg_lit_hex_char_label", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.LITERAL) },
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.CHAR) },
+        { ALT: () => $.CONSUME(allTokens.LABEL) }
+      ]);
+    });
+
     $.RULE("reg_lit_hex_char", () => {
       $.OR([
         { ALT: () => $.CONSUME(allTokens.REG) },
@@ -24,6 +34,14 @@ class AsmParser extends CstParser {
         { ALT: () => $.CONSUME(allTokens.LITERAL) },
         { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
         { ALT: () => $.CONSUME(allTokens.CHAR) }
+      ]);
+    });
+
+    $.RULE("reg_hex_label", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.REG) },
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.LABEL) }
       ]);
     });
 
@@ -47,7 +65,7 @@ class AsmParser extends CstParser {
 
     $.RULE("mov", () => {
       $.CONSUME(allTokens.MOV);
-      $.SUBRULE($.reg_lit_hex_char);
+      $.SUBRULE($.reg_lit_hex_char_label);
       $.CONSUME(allTokens.REG);
     });
 
@@ -71,15 +89,17 @@ class AsmParser extends CstParser {
 
     $.RULE("push", () => {
       $.CONSUME(allTokens.PUSH);
-      $.SUBRULE($.lit_hex_char);
+      $.SUBRULE($.reg_lit_hex_char);
+    });
+
+    $.RULE("pop", () => {
+      $.CONSUME(allTokens.POP);
+      $.CONSUME2(allTokens.REG);
     });
 
     $.RULE("call", () => {
       $.CONSUME(allTokens.CALL);
-      $.OR([
-        { ALT: () => $.CONSUME(allTokens.LABEL) },
-        { ALT: () => $.SUBRULE2($.reg_hex) }
-      ]);
+      $.SUBRULE2($.reg_hex_label);
     });
 
     $.RULE("jump_not_equal", () => {
@@ -93,7 +113,20 @@ class AsmParser extends CstParser {
         { ALT: () => $.CONSUME(allTokens.SUB) },
         { ALT: () => $.CONSUME(allTokens.MULT) },
         { ALT: () => $.CONSUME(allTokens.DIV) },
+        { ALT: () => $.CONSUME(allTokens.MOD) },
         { ALT: () => $.CONSUME(allTokens.CMP) }
+      ]);
+      $.SUBRULE1($.reg_lit);
+      $.CONSUME2(allTokens.REG);
+    });
+
+    $.RULE("binary", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.SRA) },
+        { ALT: () => $.CONSUME(allTokens.SLA) },
+        { ALT: () => $.CONSUME(allTokens.AND) },
+        { ALT: () => $.CONSUME(allTokens.OR) },
+        { ALT: () => $.CONSUME(allTokens.XOR) }
       ]);
       $.SUBRULE1($.reg_lit);
       $.CONSUME2(allTokens.REG);
@@ -106,8 +139,10 @@ class AsmParser extends CstParser {
         { ALT: () => $.SUBRULE($.store) },
         { ALT: () => $.SUBRULE($.copy) },
         { ALT: () => $.SUBRULE($.push) },
+        { ALT: () => $.SUBRULE($.pop) },
         { ALT: () => $.SUBRULE($.call) },
         { ALT: () => $.SUBRULE($.arithmetic) },
+        { ALT: () => $.SUBRULE($.binary) },
         { ALT: () => $.SUBRULE($.target) },
         { ALT: () => $.SUBRULE($.jump_not_equal) }
       ]);
@@ -124,9 +159,40 @@ class AsmParser extends CstParser {
       $.CONSUME(allTokens.RET);
     });
 
+    $.RULE("ascii", () => {
+      $.CONSUME(allTokens.DT_ASCII);
+      $.CONSUME(allTokens.STRING);
+    });
+
+    $.RULE("byte", () => {
+      $.CONSUME(allTokens.DT_BYTE);
+      $.MANY(() => $.CONSUME(allTokens.CHAR));
+    });
+
+    $.RULE("space", () => {
+      $.CONSUME(allTokens.DT_SPACE);
+      $.CONSUME(allTokens.LITERAL);
+    });
+
+    $.RULE("word", () => {
+      $.CONSUME(allTokens.DT_WORD);
+      $.MANY(() => $.CONSUME(allTokens.LITERAL));
+    });
+
+    $.RULE("segment", () => {
+      $.CONSUME(allTokens.LABEL);
+      $.CONSUME(allTokens.COLON);
+      $.OR([
+        { ALT: () => $.SUBRULE($.ascii) },
+        { ALT: () => $.SUBRULE($.byte) },
+        { ALT: () => $.SUBRULE($.space) },
+        { ALT: () => $.SUBRULE($.word) }
+      ]);
+    });
+
     $.RULE("data", () => {
       $.CONSUME(allTokens.DATA);
-      $.CONSUME(allTokens.COLON);
+      $.MANY(() => $.SUBRULE($.segment));
     });
 
     $.RULE("main", () => {
@@ -140,6 +206,7 @@ class AsmParser extends CstParser {
       $.OPTION(() => {
         $.SUBRULE($.data);
       });
+      $.CONSUME(allTokens.CODE);
       $.SUBRULE($.main);
       $.MANY(() => $.SUBRULE($.method));
     });

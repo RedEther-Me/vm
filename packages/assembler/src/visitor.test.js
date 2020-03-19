@@ -293,7 +293,7 @@ describe("convertToInstruction.js", () => {
         });
 
         expect(result).toEqual([
-          i2s(INSTRUCTIONS.COPY_MEM_HEX_HEX),
+          i2s(INSTRUCTIONS.COPY_HEX_HEX),
           "0011000000000000",
           "0011000000000001"
         ]);
@@ -317,10 +317,7 @@ describe("convertToInstruction.js", () => {
           }
         });
 
-        expect(result).toEqual([
-          i2s(INSTRUCTIONS.COPY_MEM_REG_REG),
-          "01010100"
-        ]);
+        expect(result).toEqual([i2s(INSTRUCTIONS.COPY_REG_REG), "01010100"]);
       });
 
       it("COPY r4 0x3001", () => {
@@ -342,7 +339,7 @@ describe("convertToInstruction.js", () => {
         });
 
         expect(result).toEqual([
-          i2s(INSTRUCTIONS.COPY_MEM_REG_HEX),
+          i2s(INSTRUCTIONS.COPY_REG_HEX),
           "00000101",
           "0011000000000001"
         ]);
@@ -367,7 +364,7 @@ describe("convertToInstruction.js", () => {
       });
 
       expect(result).toEqual([
-        i2s(INSTRUCTIONS.COPY_MEM_HEX_REG),
+        i2s(INSTRUCTIONS.COPY_HEX_REG),
         "01010000",
         "0011000000000000"
       ]);

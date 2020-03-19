@@ -1,10 +1,12 @@
 import commander from "commander";
+import yaml from "node-yaml";
 
 import { readFileAsync, writeFileAsync } from "@emulator/core";
 
 import assembler from "./assembler.js";
 
 commander
+  .option("-m, --makefile [folder]", "makefile")
   .option("-s, --source [file].asm", "asm source file")
   .option("-o, --output [file].bin", "output binary file");
 
@@ -23,13 +25,38 @@ function outputName(source, output) {
   return `${base}.bin`;
 }
 
-async function runner() {
-  const { source, output } = commander;
-
-  const input = await readFileAsync(source);
+async function assemble({ main, output, files }) {
+  const input = await readFileAsync(main);
   const result = await assembler(input);
 
-  await writeFileAsync(outputName(source, output), result);
+  await writeFileAsync(outputName(main, output), result);
 }
 
-runner();
+async function runner() {
+  const { source, output, makefile } = commander;
+
+  if (makefile) {
+    const config = await yaml.read(`${makefile}/makefile`);
+
+    await Object.entries(config).reduce(
+      async (prev, [key, { main, files = [] }]) => {
+        await prev;
+        console.log(`${makefile}/${key}/${main}`);
+        await assemble({
+          main: `${makefile}/${key}/${main}`,
+          files: files.map(f => `${makefile}/${key}/${f}`)
+        });
+        return;
+      },
+      Promise.resolve()
+    );
+  } else {
+    assemble({ main: source, output });
+  }
+}
+
+try {
+  runner();
+} catch (err) {
+  console.log(err);
+}

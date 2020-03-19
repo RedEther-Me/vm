@@ -24,9 +24,17 @@ export default program => {
         return { ...map, [countKey]: map[countKey] + 2 };
       }
 
+      if (isTypeOf(item, "data")) {
+        return {
+          ...map,
+          [item.name]: map[countKey],
+          [countKey]: map[countKey] + item.size / 8
+        };
+      }
+
       return { ...map, [countKey]: map[countKey] + item.length / 8 };
     },
-    { [countKey]: 0 }
+    { [countKey]: 2 }
   );
 
   const replaced = program.map(item => {
@@ -36,11 +44,20 @@ export default program => {
       return address.toString(2).padStart(16, "0");
     }
 
+    if (isTypeOf(item, "data")) {
+      return item.value;
+    }
+
     return item;
   });
 
   // Filter out LABELS
   const filtered = replaced.filter(item => !isTypeOf(item, "key"));
 
-  return filtered;
+  const setup = {
+    main: labelMap.main.toString(2).padStart(16, "0")
+  };
+  const setupArr = [setup.main];
+
+  return [...setupArr, ...filtered];
 };

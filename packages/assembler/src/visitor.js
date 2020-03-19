@@ -34,12 +34,27 @@ export default parser => {
       return {};
     }
 
+    label(ctx) {
+      const { LABEL } = ctx.children;
+
+      return {
+        value: { type: "address", name: LABEL[0].image },
+        isLabel: true
+      };
+    }
+
     literal(ctx) {
-      return parseInt(ctx.image, 10);
+      const test = parseInt(ctx.image, 10);
+
+      if (test < 0) {
+        return { value: (test >>> 0) & 0xffff, isLiteral: true };
+      }
+
+      return { value: test, isLiteral: true };
     }
 
     hex(ctx) {
-      return parseInt(ctx.image, 16);
+      return { value: parseInt(ctx.image, 16), isHex: true };
     }
 
     char(ctx) {
@@ -50,93 +65,131 @@ export default parser => {
       return ctx.image.charCodeAt(1);
     }
 
-    reg_lit_hex_char() {
-      return [];
-    }
+    reg_lit_hex_char_label(ctx) {
+      const { LABEL } = ctx.children;
 
-    lit_hex_char() {
-      return [];
-    }
-
-    reg_lit() {
-      return [];
-    }
-
-    reg_hex() {
-      const { HEX_VALUE, REG } = children;
-
-      if (HEX_VALUE) {
-        return this.hex(HEX_VALUE[0]);
+      if (LABEL) {
+        return this.label(ctx);
       }
 
-      return this.register(REG[0]);
+      return this.reg_lit_hex_char(ctx);
     }
 
-    hexOrLitOrChar(children) {
-      const { HEX_VALUE, LITERAL, CHAR } = children;
+    reg_lit_hex_char(ctx) {
+      const { REG } = ctx.children;
+
+      if (REG) {
+        return this.register(ctx);
+      }
+
+      return this.lit_hex_char(ctx);
+    }
+
+    lit_hex_char(ctx) {
+      const { HEX_VALUE, LITERAL, CHAR } = ctx.children;
       if (HEX_VALUE) {
         return this.hex(HEX_VALUE[0]);
       }
 
       if (CHAR) {
-        return this.char(CHAR[0]);
+        return { value: this.char(CHAR[0]), isChar: true };
       }
 
       return this.literal(LITERAL[0]);
     }
 
+    reg_lit(ctx) {
+      const { LITERAL } = ctx.children;
+
+      if (LITERAL) {
+        return this.literal(LITERAL[0]);
+      }
+
+      return this.register(ctx);
+    }
+
+    reg_hex_label(ctx) {
+      const { LABEL } = ctx.children;
+
+      if (LABEL) {
+        return {
+          value: { type: "address", name: LABEL[0].image },
+          isLabel: true
+        };
+      }
+    }
+
+    reg_hex(ctx) {
+      const { HEX_VALUE } = ctx.children;
+
+      if (HEX_VALUE) {
+        return this.hex(HEX_VALUE[0]);
+      }
+
+      return this.register(ctx);
+    }
+
     register(ctx) {
-      const name = ctx.image;
-      return registerLookup[name];
+      const { REG } = ctx.children;
+      const { image: name } = REG[0];
+      return { value: registerLookup[name], isRegister: true };
     }
 
     mov(ctx) {
       const { children } = ctx;
-      const { REG, reg_lit_hex_char } = children;
+      const { reg_lit_hex_char_label } = children;
 
-      if (reg_lit_hex_char[0].children.REG) {
+      const {
+        isLabel,
+        isRegister,
+        value: sourceValue
+      } = this.reg_lit_hex_char_label(reg_lit_hex_char_label[0]);
+
+      if (isRegister) {
         const { instruction, pattern } = INSTRUCTIONS.MOV_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_lit_hex_char[0].children.REG[0]),
-          T: this.register(REG[0])
+          S: sourceValue,
+          T: this.register(ctx).value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
-
       const { instruction, pattern } = INSTRUCTIONS.MOV_LIT_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(REG[0])
+        T: this.register(ctx).value
       });
 
-      return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
+      return [
+        i2s(instruction),
+        i2s(fullInstruction),
+        isLabel ? sourceValue : i2s(sourceValue, 16)
+      ];
     }
 
     load(ctx) {
       const { children } = ctx;
-      const { REG, reg_hex } = children;
+      const { reg_hex } = children;
 
-      if (reg_hex[0].children.HEX_VALUE) {
+      const { isHex, value } = this.reg_hex(reg_hex[0]);
+
+      if (isHex) {
         const { instruction, pattern } = INSTRUCTIONS.LOAD_ADR;
 
         const fullInstruction = convertToInstruction(pattern, {
-          T: this.register(REG[0])
+          T: this.register(ctx).value
         });
 
-        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]);
-
-        return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
+        return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
       }
 
       const { instruction, pattern } = INSTRUCTIONS.LOAD_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(REG[0]),
-        S: this.register(reg_hex[0].children.REG[0])
+        T: this.register(ctx).value,
+        S: value
       });
 
       return [i2s(instruction), i2s(fullInstruction)];
@@ -146,32 +199,37 @@ export default parser => {
       const { children } = ctx;
       const { reg_lit_hex_char, reg_hex } = children;
 
-      if (reg_hex[0].children.HEX_VALUE) {
-        const address = this.hex(reg_hex[0].children.HEX_VALUE[0]);
+      const {
+        isRegister: sourceIsReg,
+        value: sourceValue
+      } = this.reg_lit_hex_char(reg_lit_hex_char[0]);
 
-        if (reg_lit_hex_char[0].children.REG) {
+      const { isHex: targetIsHex, value: targetValue } = this.reg_hex(
+        reg_hex[0]
+      );
+
+      if (targetIsHex) {
+        if (sourceIsReg) {
           const { instruction, pattern } = INSTRUCTIONS.STORE_REG_HEX;
 
           const fullInstruction = convertToInstruction(pattern, {
-            S: this.register(reg_lit_hex_char[0].children.REG[0])
+            S: sourceValue
           });
 
-          return [i2s(instruction), i2s(fullInstruction), i2s(address, 16)];
+          return [i2s(instruction), i2s(fullInstruction), i2s(targetValue, 16)];
         }
 
         const { instruction } = INSTRUCTIONS.STORE_LIT_HEX;
 
-        const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
-
-        return [i2s(instruction), i2s(value, 16), i2s(address, 16)];
+        return [i2s(instruction), i2s(sourceValue, 16), i2s(targetValue, 16)];
       }
 
-      if (reg_lit_hex_char[0].children.REG) {
+      if (sourceIsReg) {
         const { instruction, pattern } = INSTRUCTIONS.STORE_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(reg_lit_hex_char[0].children.REG[0]),
-          T: this.register(reg_hex[0].children.REG[0])
+          S: sourceValue,
+          T: targetValue
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
@@ -180,108 +238,116 @@ export default parser => {
       const { instruction, pattern } = INSTRUCTIONS.STORE_LIT_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(reg_hex[0].children.REG[0])
+        T: targetValue
       });
 
-      const value = this.hexOrLitOrChar(reg_lit_hex_char[0].children);
-
-      return [i2s(instruction), i2s(fullInstruction), i2s(value, 16)];
+      return [i2s(instruction), i2s(fullInstruction), i2s(sourceValue, 16)];
     }
 
     copy(ctx) {
       const { children } = ctx;
       const { reg_hex } = children;
 
-      const first = reg_hex[0].children;
-      const second = reg_hex[1].children;
+      const {
+        isHex: sourceIsHex,
+        isRegister: sourceIsReg,
+        value: sourceValue
+      } = this.reg_hex(reg_hex[0]);
+      const {
+        isHex: targetIsHex,
+        isRegister: targetIsReg,
+        value: targetValue
+      } = this.reg_hex(reg_hex[1]);
 
       // Both are HEX
-      if (first.HEX_VALUE && second.HEX_VALUE) {
-        const { instruction } = INSTRUCTIONS.COPY_MEM_HEX_HEX;
+      if (sourceIsHex && targetIsHex) {
+        const { instruction } = INSTRUCTIONS.COPY_HEX_HEX;
 
-        const from = this.hex(first.HEX_VALUE[0]);
-        const to = this.hex(second.HEX_VALUE[0]);
-
-        return [i2s(instruction), i2s(from, 16), i2s(to, 16)];
+        return [i2s(instruction), i2s(sourceValue, 16), i2s(targetValue, 16)];
       }
 
       // Both are REG
-      if (first.REG && second.REG) {
-        const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_REG_REG;
+      if (sourceIsReg && targetIsReg) {
+        const { instruction, pattern } = INSTRUCTIONS.COPY_REG_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(first.REG[0]),
-          T: this.register(second.REG[0])
+          S: sourceValue,
+          T: targetValue
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      if (first.REG && second.HEX_VALUE) {
-        const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_REG_HEX;
+      if (sourceIsReg && targetIsHex) {
+        const { instruction, pattern } = INSTRUCTIONS.COPY_REG_HEX;
 
         const fullInstruction = convertToInstruction(pattern, {
-          S: this.register(first.REG[0])
+          S: sourceValue
         });
 
-        const to = this.hex(second.HEX_VALUE[0]);
-
-        return [i2s(instruction), i2s(fullInstruction), i2s(to, 16)];
+        return [i2s(instruction), i2s(fullInstruction), i2s(targetValue, 16)];
       }
 
-      const { instruction, pattern } = INSTRUCTIONS.COPY_MEM_HEX_REG;
+      const { instruction, pattern } = INSTRUCTIONS.COPY_HEX_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        T: this.register(second.REG[0])
+        T: targetValue
       });
 
-      const from = this.hex(first.HEX_VALUE[0]);
-
-      return [i2s(instruction), i2s(fullInstruction), i2s(from, 16)];
+      return [i2s(instruction), i2s(fullInstruction), i2s(sourceValue, 16)];
     }
 
     push(ctx) {
-      const { lit_hex_char } = ctx.children;
+      const { reg_lit_hex_char } = ctx.children;
 
-      if (lit_hex_char[0].children.REG) {
+      const { isRegister, value } = this.reg_lit_hex_char(reg_lit_hex_char[0]);
+
+      if (isRegister) {
         const { instruction, pattern } = INSTRUCTIONS.PSH_REG;
 
         const fullInstruction = convertToInstruction(pattern, {
-          R: this.register(lit_hex_char[0].children.REG[0])
+          R: value
         });
 
         return [i2s(instruction), i2s(fullInstruction)];
       }
 
-      const maybeValue = this.hexOrLitOrChar(lit_hex_char[0].children);
-
       const { instruction } = INSTRUCTIONS.PSH_LIT;
 
-      return [i2s(instruction), i2s(maybeValue, 16)];
+      return [i2s(instruction), i2s(value, 16)];
+    }
+
+    pop(ctx) {
+      const { instruction, pattern } = INSTRUCTIONS.POP;
+
+      const fullInstruction = convertToInstruction(pattern, {
+        R: this.register(ctx).value
+      });
+
+      return [i2s(instruction), i2s(fullInstruction)];
     }
 
     call(ctx) {
-      const { LABEL, reg_hex } = ctx.children;
+      const { reg_hex_label } = ctx.children;
 
-      if (LABEL) {
+      const { isLabel, isHex, value } = this.reg_hex_label(reg_hex_label[0]);
+
+      if (isLabel) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
-        return [i2s(instruction), { type: "address", name: LABEL[0].image }];
+        return [i2s(instruction), value];
       }
 
-      const { HEX_VALUE, REG } = reg_hex[0].children;
-
-      if (HEX_VALUE) {
+      if (isHex) {
         const { instruction } = INSTRUCTIONS.CAL_LIT;
-        return [i2s(instruction), i2s(this.hex(HEX_VALUE[0]), 16)];
+
+        return [i2s(instruction), i2s(value, 16)];
       }
 
       const { instruction, pattern } = INSTRUCTIONS.CAL_REG;
 
       const fullInstruction = convertToInstruction(pattern, {
-        R: this.register(REG[0])
+        R: value
       });
-
-      // TODO: Load arguments into registers 0-8
 
       return [i2s(instruction), i2s(fullInstruction)];
     }
@@ -293,47 +359,83 @@ export default parser => {
     }
 
     jump_not_equal(ctx) {
-      const { LABEL } = ctx.children;
+      const { value } = this.label(ctx);
 
       const { instruction } = INSTRUCTIONS.JMP_NOT_EQ;
 
-      return [i2s(instruction), { type: "address", name: LABEL[0].image }];
+      return [i2s(instruction), value];
     }
 
     arithmetic(ctx) {
       const { children } = ctx;
-      const { reg_lit, REG, ADD, SUB, DIV, MULT, CMP } = children;
+      const { reg_lit, ADD, SUB, DIV, MULT, MOD, CMP } = children;
 
-      const isReg = !!reg_lit[0].children.REG;
+      const { isRegister, value } = this.reg_lit(reg_lit[0]);
 
       const opLookup = () => {
-        if (isReg) {
-          if (ADD) return INSTRUCTIONS.ARITH_ADD_REG;
-          if (SUB) return INSTRUCTIONS.ARITH_SUB_REG;
-          if (MULT) return INSTRUCTIONS.ARITH_MULT;
-          if (DIV) return INSTRUCTIONS.ARITH_DIV;
-          if (CMP) return INSTRUCTIONS.CMP_REG;
+        if (isRegister) {
+          if (ADD && ADD[0].image === "ADD") return INSTRUCTIONS.ADD_REG;
+          if (ADD && ADD[0].image === "ADDU") return INSTRUCTIONS.ADDU_REG;
+          if (SUB) return INSTRUCTIONS.SUB_REG;
+          if (MULT) return INSTRUCTIONS.MULT_REG;
+          if (DIV) return INSTRUCTIONS.DIV_REG;
+          if (MOD) return INSTRUCTIONS.MOD_REG;
+          if (CMP && CMP[0].image === "CMP") return INSTRUCTIONS.CMP_REG;
+          if (CMP && CMP[0].image === "CMPU") return INSTRUCTIONS.CMPU_REG;
         }
 
-        if (ADD) return INSTRUCTIONS.ARITH_ADD_LIT;
-        if (SUB) return INSTRUCTIONS.ARITH_SUB_LIT;
-        // if (MULT) return INSTRUCTIONS.ARITH_MULT;
-        // if (DIV) return INSTRUCTIONS.ARITH_DIV;
-        if (CMP) return INSTRUCTIONS.CMP_LIT;
+        if (ADD && ADD[0].image === "ADD") return INSTRUCTIONS.ADD_LIT;
+        if (ADD && ADD[0].image === "ADDU") return INSTRUCTIONS.ADDU_LIT;
+        if (SUB) return INSTRUCTIONS.SUB_LIT;
+        if (MULT) return INSTRUCTIONS.MULT_LIT;
+        if (DIV) return INSTRUCTIONS.DIV_LIT;
+        if (MOD) return INSTRUCTIONS.MOD_LIT;
+        if (CMP && CMP[0].image === "CMP") return INSTRUCTIONS.CMP_LIT;
+        if (CMP && CMP[0].image === "CMPU") return INSTRUCTIONS.CMPU_LIT;
       };
 
       const { instruction, pattern } = opLookup();
 
-      const value = isReg
-        ? this.register(reg_lit[0].children.REG[0])
-        : this.literal(reg_lit[0].children.LITERAL[0]);
-
       const fullInstruction = convertToInstruction(pattern, {
-        S: isReg ? value : undefined,
-        T: this.register(REG[0])
+        S: isRegister ? value : undefined,
+        T: this.register(ctx).value
       });
 
-      const extraInstruction = isReg ? [] : [i2s(value, 16)];
+      const extraInstruction = isRegister ? [] : [i2s(value, 16)];
+
+      return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
+    }
+
+    binary(ctx) {
+      const { children } = ctx;
+      const { reg_lit, SRA, SLA, AND, OR, XOR } = children;
+
+      const { isRegister, value } = this.reg_lit(reg_lit[0]);
+
+      const opLookup = () => {
+        if (isRegister) {
+          if (SRA) return INSTRUCTIONS.SRA_REG;
+          if (SLA) return INSTRUCTIONS.SLA_REG;
+          if (AND) return INSTRUCTIONS.AND_REG;
+          if (OR) return INSTRUCTIONS.OR_REG;
+          if (XOR) return INSTRUCTIONS.XOR_REG;
+        }
+
+        if (SRA) return INSTRUCTIONS.SRA_LIT;
+        if (SLA) return INSTRUCTIONS.SLA_LIT;
+        if (AND) return INSTRUCTIONS.AND_LIT;
+        if (OR) return INSTRUCTIONS.OR_LIT;
+        if (XOR) return INSTRUCTIONS.XOR_LIT;
+      };
+
+      const { instruction, pattern } = opLookup();
+
+      const fullInstruction = convertToInstruction(pattern, {
+        S: isRegister ? value : undefined,
+        T: this.register(ctx).value
+      });
+
+      const extraInstruction = isRegister ? [] : [i2s(value, 16)];
 
       return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
     }
@@ -344,8 +446,57 @@ export default parser => {
       return this[command](ctx[command][0]);
     }
 
-    data() {
-      return [];
+    data(ctx) {
+      const segments = (ctx.segment || []).reduce(
+        (acc, segment) => [...acc, ...this.visit(segment)],
+        []
+      );
+
+      return [...segments];
+    }
+
+    ascii(ctx) {
+      const image = ctx.STRING[0].image;
+      const value = image.substring(1, image.length - 1);
+
+      const vArr = [];
+
+      let i = 0;
+      for (i = 0; i < value.length; i += 1) {
+        if (value[i] === "\\") {
+          i += 1;
+        }
+
+        vArr.push(i2s(value[i].charCodeAt(0), 16));
+      }
+
+      const joined = vArr.join("");
+      return [joined, joined.length];
+    }
+
+    byte(ctx) {
+      return [i2s(this.char(ctx.CHAR[0]), 8), 8];
+    }
+
+    space(ctx) {
+      const { value } = this.literal(ctx.LITERAL[0]);
+      const size = value * 4;
+
+      return [i2s(0, size), size];
+    }
+
+    word(ctx) {
+      const { value } = this.literal(ctx.LITERAL[0]);
+
+      return [i2s(value, 16), 16];
+    }
+
+    segment(ctx) {
+      const { ascii, byte, space, word, LABEL } = ctx;
+
+      const [value, size] = this.visit(ascii || byte || space || word);
+
+      return [{ type: "data", name: LABEL[0].image, value, size }];
     }
 
     method(ctx) {
@@ -386,6 +537,8 @@ export default parser => {
     }
 
     program(ctx) {
+      const data = this.visit(ctx.data) || [];
+
       const main = this.visit(ctx.main);
 
       const methods = (ctx.method || []).reduce(
@@ -393,7 +546,7 @@ export default parser => {
         []
       );
 
-      const preprocess = [...main, ...methods];
+      const preprocess = [...data, ...main, ...methods];
       const postprocess = postProcessor(preprocess);
       return postprocess.join("");
     }
