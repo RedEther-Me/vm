@@ -59,7 +59,7 @@
     ## ARG 0 => r2: Number of characters
 
     MOV fp acc
-    ADD 22 acc            ## Location of Argument Count
+    ADD 24 acc            ## Location of Argument Count
     ADD 2 acc             ## Location of Character Count
     LOAD acc r1
     ADD 2 acc             ## Location of First Character Address
@@ -90,7 +90,7 @@
   ## Print number as characters
   printNum:
     MOV fp acc
-    ADD 22 acc            ## Location of Argument Count
+    ADD 24 acc            ## Location of Argument Count
     ADD 2 acc             ## Location of Number to Print
     LOAD acc r1
 

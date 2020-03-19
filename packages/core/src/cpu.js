@@ -22,7 +22,8 @@ class CPU {
       "r7",
       "r8",
       "sp",
-      "fp"
+      "fp",
+      "rip"
     ];
 
     this.registers = createMemory(this.registerNames.length * 2);
@@ -45,10 +46,6 @@ class CPU {
     this.stackFrameSize = 0;
 
     this.issueEvent({ type: "reset" });
-  }
-
-  printInstruction(instruction) {
-    return instruction.toString(2).padStart(16, "0");
   }
 
   getName(address) {
@@ -142,6 +139,7 @@ class CPU {
     this.push(this.getRegister("r7"));
     this.push(this.getRegister("r8"));
     this.push(this.getRegister("ip"));
+    this.push(this.getRegister("rip"));
     this.push(this.stackFrameSize + 2);
 
     this.setRegisterByName("fp", this.getRegister("sp"));
@@ -155,6 +153,7 @@ class CPU {
     this.stackFrameSize = this.pop();
     const stackFrameSize = this.stackFrameSize;
 
+    this.setRegisterByName("rip", this.pop());
     this.setRegisterByName("ip", this.pop());
     this.setRegisterByName("r8", this.pop());
     this.setRegisterByName("r7", this.pop());
@@ -669,10 +668,11 @@ class CPU {
       // Jump if not equal
       case INSTRUCTIONS.JMP_NOT_EQ.instruction: {
         const cmp = this.getRegister("acc");
+        const rip = this.getRegister("rip");
         const address = this.fetch16();
 
         if (!(cmp & 0x1)) {
-          this.setRegisterByName("ip", address);
+          this.setRegisterByName("ip", rip + address);
         }
 
         return;
@@ -726,10 +726,11 @@ class CPU {
 
       // Call literal
       case INSTRUCTIONS.CAL_LIT.instruction: {
+        const rip = this.getRegister("rip");
         const address = this.fetch16();
 
         this.pushState();
-        this.setRegisterByName("ip", address);
+        this.setRegisterByName("ip", rip + address);
 
         this.logger.log("CAL_LIT", {
           address
@@ -746,9 +747,11 @@ class CPU {
           options
         );
 
+        const rip = this.getRegister("rip");
         const address = this.registers.getUint16(R);
+
         this.pushState();
-        this.setRegisterByName("ip", address);
+        this.setRegisterByName("ip", rip + address);
 
         this.logger.log("CAL_LIT", {
           address

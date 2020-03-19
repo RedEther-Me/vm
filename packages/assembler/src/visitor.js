@@ -14,7 +14,8 @@ const registerLookup = {
   r7: 8,
   r8: 9,
   sp: 10,
-  fp: 11
+  fp: 11,
+  rip: 12
 };
 
 const i2s = (instruction, length = 8) =>

@@ -6,9 +6,13 @@ const isTypeOf = (item, type) => {
   return typeof item !== "string" && item.type === type;
 };
 
+const printAddress = address => address.toString(2).padStart(16, "0");
+
 const countKey = "@@@@___count";
 
 export default program => {
+  const setup = [["main", printAddress(0)]];
+
   // Replace ADDRESS with values
 
   // build label map
@@ -41,7 +45,7 @@ export default program => {
     if (isTypeOf(item, "address")) {
       const address = labelMap[item.name];
 
-      return address.toString(2).padStart(16, "0");
+      return printAddress(address);
     }
 
     if (isTypeOf(item, "data")) {
@@ -54,10 +58,9 @@ export default program => {
   // Filter out LABELS
   const filtered = replaced.filter(item => !isTypeOf(item, "key"));
 
-  const setup = {
-    main: labelMap.main.toString(2).padStart(16, "0")
-  };
-  const setupArr = [setup.main];
+  const setupArr = setup.map(([key, value]) =>
+    printAddress(labelMap[key] || value)
+  );
 
   return [...setupArr, ...filtered];
 };
