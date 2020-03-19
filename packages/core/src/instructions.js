@@ -7,9 +7,12 @@ const STORE_REG_HEX = "STORE_REG_HEX";
 const STORE_REG_REG = "STORE_REG_REG";
 const STORE_LIT_HEX = "STORE_LIT_HEX";
 const STORE_LIT_REG = "STORE_LIT_REG";
+const STORE_REL_REG_HEX = "STORE_REL_REG_HEX";
+const STORE_REL_LIT_HEX = "STORE_REL_LIT_HEX";
 
 const LOAD_ADR = "LOAD_ADR";
 const LOAD_REG = "LOAD_REG";
+const LOAD_REL_ADR = "LOAD_REL_ADR";
 
 const COPY_HEX_HEX = "COPY_HEX_HEX";
 const COPY_REG_REG = "COPY_REG_REG";
@@ -74,9 +77,12 @@ const instructions = {
   [STORE_REG_REG]: 0x31,
   [STORE_LIT_HEX]: 0x32,
   [STORE_LIT_REG]: 0x33,
+  [STORE_REL_REG_HEX]: 0x34,
+  [STORE_REL_LIT_HEX]: 0x35,
 
   [LOAD_ADR]: 0x40,
   [LOAD_REG]: 0x41,
+  [LOAD_REL_ADR]: 0x42,
 
   [COPY_HEX_HEX]: 0x50,
   [COPY_REG_REG]: 0x51,
@@ -168,6 +174,18 @@ export default {
     }
   },
 
+  [STORE_REL_REG_HEX]: {
+    instruction: instructions[STORE_REL_REG_HEX],
+    mask: "0000SSSS",
+    pattern: {
+      S: { P: 0x0f, S: 0 }
+    }
+  },
+
+  [STORE_REL_LIT_HEX]: {
+    instruction: instructions[STORE_REL_LIT_HEX]
+  },
+
   [LOAD_ADR]: {
     instruction: instructions[LOAD_ADR],
     mask: "TTTT0000",
@@ -181,6 +199,14 @@ export default {
     mask: "TTTTSSSS",
     pattern: {
       S: { P: 0x0f, S: 0 },
+      T: { P: 0xf0, S: 4 }
+    }
+  },
+
+  [LOAD_REL_ADR]: {
+    instruction: instructions[LOAD_REL_ADR],
+    mask: "TTTT0000",
+    pattern: {
       T: { P: 0xf0, S: 4 }
     }
   },

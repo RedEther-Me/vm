@@ -31,7 +31,10 @@ const XOR = createToken({ name: "XOR", pattern: /XOR/ });
 
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
-const REG = createToken({ name: "REG", pattern: /r[0-8]|acc|sp|fp|rip/ });
+const REG = createToken({
+  name: "REG",
+  pattern: /\$(acc|sp|fp|rip|ip|r[0-8])/
+});
 
 const LITERAL = createToken({ name: "LITERAL", pattern: /[\-]?[0-9]+/ });
 const HEX_VALUE = createToken({ name: "HEX_VALUE", pattern: /0x[0-9A-Fa-f]+/ });
@@ -41,7 +44,7 @@ const CHAR = createToken({
 });
 const STRING = createToken({
   name: "STRING",
-  pattern: /\"[\\A-Za-z\'"\-,.:;?!@#$%^&*(){}\[\] ]*\"/
+  pattern: /\"[\\A-Za-z0-9\'"\-,.:;?!@#$%^&*(){}\[\] \s]*\"/
 });
 
 // tags

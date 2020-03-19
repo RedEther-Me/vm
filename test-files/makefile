@@ -1,6 +1,11 @@
 absolute-value:
   main: absolute-value.asm
 
+basic-os:
+  main: basic-os.asm
+  files:
+    - output.asm
+
 binary-test:
   main: binary-test.asm
 

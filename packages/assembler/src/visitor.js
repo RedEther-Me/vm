@@ -3,19 +3,19 @@ import { convertToInstruction, INSTRUCTIONS } from "@emulator/core";
 import postProcessor from "./post-processor.js";
 
 const registerLookup = {
-  ip: 0,
-  acc: 1,
-  r1: 2,
-  r2: 3,
-  r3: 4,
-  r4: 5,
-  r5: 6,
-  r6: 7,
-  r7: 8,
-  r8: 9,
-  sp: 10,
-  fp: 11,
-  rip: 12
+  $ip: 0,
+  $acc: 1,
+  $r1: 2,
+  $r2: 3,
+  $r3: 4,
+  $r4: 5,
+  $r5: 6,
+  $r6: 7,
+  $r7: 8,
+  $r8: 9,
+  $sp: 10,
+  $fp: 11,
+  $rip: 12
 };
 
 const i2s = (instruction, length = 8) =>
@@ -118,6 +118,18 @@ export default parser => {
           isLabel: true
         };
       }
+
+      return this.reg_hex(ctx);
+    }
+
+    hex_lit(ctx) {
+      const { HEX_VALUE } = ctx.children;
+
+      if (HEX_VALUE) {
+        return this.hex(HEX_VALUE[0]);
+      }
+
+      return this.literal(ctx);
     }
 
     reg_hex(ctx) {
@@ -171,10 +183,19 @@ export default parser => {
     }
 
     load(ctx) {
-      const { children } = ctx;
-      const { reg_hex } = children;
+      const { reg_hex_label } = ctx.children;
 
-      const { isHex, value } = this.reg_hex(reg_hex[0]);
+      const { isHex, isLabel, value } = this.reg_hex_label(reg_hex_label[0]);
+
+      if (isLabel) {
+        const { instruction, pattern } = INSTRUCTIONS.LOAD_REL_ADR;
+
+        const fullInstruction = convertToInstruction(pattern, {
+          T: this.register(ctx).value
+        });
+
+        return [i2s(instruction), i2s(fullInstruction), value];
+      }
 
       if (isHex) {
         const { instruction, pattern } = INSTRUCTIONS.LOAD_ADR;
@@ -198,16 +219,34 @@ export default parser => {
 
     store(ctx) {
       const { children } = ctx;
-      const { reg_lit_hex_char, reg_hex } = children;
+      const { reg_lit_hex_char, reg_hex_label } = children;
 
       const {
         isRegister: sourceIsReg,
         value: sourceValue
       } = this.reg_lit_hex_char(reg_lit_hex_char[0]);
 
-      const { isHex: targetIsHex, value: targetValue } = this.reg_hex(
-        reg_hex[0]
-      );
+      const {
+        isHex: targetIsHex,
+        isLabel: targetIsLabel,
+        value: targetValue
+      } = this.reg_hex_label(reg_hex_label[0]);
+
+      if (targetIsLabel) {
+        if (sourceIsReg) {
+          const { instruction, pattern } = INSTRUCTIONS.STORE_REL_REG_HEX;
+
+          const fullInstruction = convertToInstruction(pattern, {
+            S: sourceValue
+          });
+
+          return [i2s(instruction), i2s(fullInstruction), targetValue];
+        }
+
+        const { instruction } = INSTRUCTIONS.STORE_REL_LIT_HEX;
+
+        return [i2s(instruction), i2s(sourceValue, 16), targetValue];
+      }
 
       if (targetIsHex) {
         if (sourceIsReg) {
@@ -487,7 +526,8 @@ export default parser => {
     }
 
     word(ctx) {
-      const { value } = this.literal(ctx.LITERAL[0]);
+      const { hex_lit } = ctx;
+      const { value } = this.hex_lit(hex_lit[0]);
 
       return [i2s(value, 16), 16];
     }

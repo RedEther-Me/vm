@@ -227,7 +227,11 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.STORE_REG_HEX.instruction: {
+      case INSTRUCTIONS.STORE_REG_HEX.instruction:
+      case INSTRUCTIONS.STORE_REL_REG_HEX.instruction: {
+        const isRelative =
+          instruction === INSTRUCTIONS.STORE_REL_REG_HEX.instruction;
+
         const options = this.fetch();
 
         const { S } = convertFromInstruction(
@@ -235,10 +239,11 @@ class CPU {
           options
         );
 
+        const rip = isRelative ? this.getRegister("rip") : 0;
         const v1 = this.registers.getUint16(S * 2);
         const address = this.fetch16();
 
-        this.setMemoryByAddress(address, v1);
+        this.setMemoryByAddress(rip + address, v1);
         return;
       }
 
@@ -257,16 +262,21 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.STORE_LIT_HEX.instruction: {
+      case INSTRUCTIONS.STORE_LIT_HEX.instruction:
+      case INSTRUCTIONS.STORE_REL_LIT_HEX.instruction: {
+        const isRelative =
+          instruction === INSTRUCTIONS.STORE_REL_LIT_HEX.instruction;
+
+        const rip = isRelative ? this.getRegister("rip") : 0;
         const value = this.fetch16();
         const address = this.fetch16();
 
         this.logger.log("STORE_LIT_HEX", {
           value,
-          address: `${address} 0x${address.toString(16)}`
+          address: `${rip + address} 0x${rip + address.toString(16)}`
         });
 
-        this.setMemoryByAddress(address, value);
+        this.setMemoryByAddress(rip + address, value);
         return;
       }
 
@@ -285,7 +295,10 @@ class CPU {
         return;
       }
 
-      case INSTRUCTIONS.LOAD_ADR.instruction: {
+      case INSTRUCTIONS.LOAD_ADR.instruction:
+      case INSTRUCTIONS.LOAD_REL_ADR.instruction: {
+        const isRelative =
+          instruction === INSTRUCTIONS.LOAD_REL_ADR.instruction;
         const options = this.fetch();
 
         const { T } = convertFromInstruction(
@@ -293,10 +306,18 @@ class CPU {
           options
         );
 
+        const rip = isRelative ? this.getRegister("rip") : 0;
         const address = this.fetch16();
 
-        const value = this.getMemoryByAddress(address);
+        const value = this.getMemoryByAddress(rip + address);
         this.setRegisterByAddress(T * 2, value);
+
+        this.logger.log(isRelative ? "LOAD_REL_ADR" : "LOAD_ADR", {
+          value,
+          rip: `${rip} 0x${rip.toString(16)}`,
+          address: `${address} 0x${address.toString(16)}`,
+          final: `${rip + address} 0x${(rip + address).toString(16)}`
+        });
         return;
       }
 
@@ -410,6 +431,7 @@ class CPU {
         let unsigned = false;
 
         switch (instruction) {
+          case INSTRUCTIONS.ADDU_REG.instruction:
           case INSTRUCTIONS.CMPU_REG.instruction: {
             v1 = this.registers.getUint16(S * 2);
             v2 = this.registers.getUint16(T * 2);
@@ -551,7 +573,9 @@ class CPU {
           case INSTRUCTIONS.CMPU_REG.instruction: {
             v1 = this.fetch16();
             v2 = this.registers.getUint16(T * 2);
+            console.log(v1, v2);
             unsigned = true;
+            break;
           }
           default: {
             v1 = this.fetch16s();

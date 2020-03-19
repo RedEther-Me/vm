@@ -45,6 +45,10 @@ export default program => {
     if (isTypeOf(item, "address")) {
       const address = labelMap[item.name];
 
+      if (address === undefined) {
+        throw new Error(`${item.name} is not defined`);
+      }
+
       return printAddress(address);
     }
 

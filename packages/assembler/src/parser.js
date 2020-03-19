@@ -59,6 +59,13 @@ class AsmParser extends CstParser {
       ]);
     });
 
+    $.RULE("hex_lit", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.HEX_VALUE) },
+        { ALT: () => $.CONSUME(allTokens.LITERAL) }
+      ]);
+    });
+
     $.RULE("terminate", () => {
       $.CONSUME(allTokens.TERM);
     });
@@ -71,14 +78,14 @@ class AsmParser extends CstParser {
 
     $.RULE("load", () => {
       $.CONSUME(allTokens.LOAD);
-      $.SUBRULE($.reg_hex);
+      $.SUBRULE($.reg_hex_label);
       $.CONSUME2(allTokens.REG);
     });
 
     $.RULE("store", () => {
       $.CONSUME(allTokens.STORE);
       $.SUBRULE($.reg_lit_hex_char);
-      $.SUBRULE($.reg_hex);
+      $.SUBRULE($.reg_hex_label);
     });
 
     $.RULE("copy", () => {
@@ -176,7 +183,7 @@ class AsmParser extends CstParser {
 
     $.RULE("word", () => {
       $.CONSUME(allTokens.DT_WORD);
-      $.MANY(() => $.CONSUME(allTokens.LITERAL));
+      $.MANY(() => $.SUBRULE($.hex_lit));
     });
 
     $.RULE("segment", () => {
