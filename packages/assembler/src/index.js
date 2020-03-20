@@ -3,7 +3,9 @@ import yaml from "node-yaml";
 
 import { readFileAsync, writeFileAsync } from "@emulator/core";
 
-import assembler from "./assembler.js";
+import preprocessor from "./pre-processor/pre-processor.js";
+import processor from "./processor/processor.js";
+import postProcessor from "./post-processor/post-processor.js";
 
 commander
   .option("-m, --makefile [folder]", "makefile")
@@ -24,40 +26,44 @@ function outputName(source, output) {
 
   return `${base}.bin`;
 }
-const dataRegex = /\.data[.\s\S]*\.code/gm;
-const codeRegex = /\.code[.\s\S]*/gm;
-
-function splitData(fileString) {
-  const [data] = fileString.match(dataRegex) || [];
-  const innerData = data ? data.substring(5, data.length - 5) : data;
-
-  const [code] = fileString.match(codeRegex) || [];
-  const innerCode = code.substring(5);
-
-  return { data: innerData, code: innerCode };
-}
 
 async function assemble({ main, output, files }) {
   const input = await readFileAsync(main);
 
-  const filePromises = files.map(f => readFileAsync(f));
+  const filePromises = files.map(async f => [f, await readFileAsync(f)]);
+
   const joinFiles = await Promise.all(filePromises);
 
-  const { data, code } = joinFiles.reduce((acc, file) => {
-    const { data: d, code: c } = splitData(file);
-    return {
-      data: acc.data + d,
-      code: acc.code + c
-    };
-  }, splitData(input));
+  const globals = await joinFiles.reduce(async (acc, [name, fileContents]) => {
+    const globals = await preprocessor(fileContents);
 
-  const printData = data ? `.data\n${data}\n` : "";
-  const final = `${printData}\n.code\n${code}`;
-  // console.log(final);
+    return globals.reduce((inner, global) => {
+      if (inner[global.name]) {
+        throw new Error(`Global Previously Defined: ${global.name}`);
+      }
 
-  const result = await assembler(final);
+      return {
+        ...inner,
+        [global.name]: { ...global, file: name }
+      };
+    }, acc);
+  }, {});
 
-  await writeFileAsync(outputName(main, output), result);
+  const result = await processor({ input, globals, filename: "main" });
+
+  const test = await joinFiles.reduce(
+    async (acc, [filename, fileContents]) => [
+      ...acc,
+      ...(await processor({
+        input: fileContents,
+        globals,
+        filename: filename.substring(filename.lastIndexOf("/") + 1)
+      }))
+    ],
+    result
+  );
+
+  await writeFileAsync(outputName(main, output), postProcessor(test, globals));
 }
 
 async function runner() {

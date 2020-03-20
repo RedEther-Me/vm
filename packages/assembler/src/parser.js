@@ -212,6 +212,11 @@ class AsmParser extends CstParser {
       $.MANY(() => $.SUBRULE($.segment));
     });
 
+    $.RULE("globals", () => {
+      $.CONSUME(allTokens.GLOBAL);
+      $.CONSUME(allTokens.LABEL);
+    });
+
     $.RULE("main", () => {
       $.CONSUME(allTokens.MAIN);
       $.CONSUME(allTokens.COLON);
@@ -220,12 +225,15 @@ class AsmParser extends CstParser {
     });
 
     $.RULE("program", () => {
-      $.OPTION(() => {
+      $.OPTION1(() => {
         $.SUBRULE($.data);
       });
+      $.MANY1(() => $.SUBRULE($.globals));
       $.CONSUME(allTokens.CODE);
-      $.SUBRULE($.main);
-      $.MANY(() => $.SUBRULE($.method));
+      $.OPTION2(() => {
+        $.SUBRULE($.main);
+      });
+      $.MANY2(() => $.SUBRULE($.method));
     });
 
     this.performSelfAnalysis();

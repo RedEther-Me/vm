@@ -1,7 +1,7 @@
 import chevrotain from "chevrotain";
 
-import { orderedTokens } from "./tokens.js";
-import Parser from "./parser.js";
+import { orderedTokens } from "../tokens.js";
+import Parser from "../parser.js";
 import createVisitor from "./visitor.js";
 
 const { Lexer } = chevrotain;

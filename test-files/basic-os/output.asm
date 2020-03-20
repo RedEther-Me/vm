@@ -6,8 +6,8 @@
 
   display: .word 0x3000
 
-## .global printNumber
-## .global printString
+.global printNumber
+.global printString
 
 .code
   printNumber:

@@ -1,7 +1,5 @@
 import { convertToInstruction, INSTRUCTIONS } from "@emulator/core";
 
-import postProcessor from "./post-processor.js";
-
 const registerLookup = {
   $ip: 0,
   $acc: 1,
@@ -34,21 +32,32 @@ export default parser => {
   const BaseAsmVisitor = parser.getBaseCstVisitorConstructor();
 
   class myCustomVisitor extends BaseAsmVisitor {
-    constructor() {
+    constructor(globals, filename) {
       super();
+
+      this.globalNames = globals;
+      this.filename = filename;
 
       this.validateVisitor();
     }
 
-    terminate(ctx) {
-      return {};
+    checkAddressName(name) {
+      if (this.globalNames[name]) {
+        return name;
+      }
+
+      return `${this.filename}-${name}`;
+    }
+
+    terminate() {
+      return ["00000000"];
     }
 
     label(ctx) {
       const { LABEL } = ctx.children;
 
       return {
-        value: { type: "address", name: LABEL[0].image },
+        value: { type: "address", name: this.checkAddressName(LABEL[0].image) },
         isLabel: true
       };
     }
@@ -122,10 +131,7 @@ export default parser => {
       const { LABEL } = ctx.children;
 
       if (LABEL) {
-        return {
-          value: { type: "address", name: LABEL[0].image },
-          isLabel: true
-        };
+        return this.label(ctx);
       }
 
       return this.reg_hex(ctx);
@@ -567,13 +573,23 @@ export default parser => {
 
       const [value, size] = this.visit(ascii || byte || space || word);
 
-      return [{ type: "data", name: LABEL[0].image, value, size }];
+      return [
+        {
+          type: "data",
+          name: this.checkAddressName(LABEL[0].image),
+          value,
+          size
+        }
+      ];
     }
 
     method(ctx) {
       const { target, RET } = ctx;
 
-      const label = { type: "key", name: target[0].children.LABEL[0].image };
+      const label = {
+        type: "key",
+        name: this.checkAddressName(target[0].children.LABEL[0].image)
+      };
 
       const statements = (ctx.statement || []).reduce(
         (acc, statement) => [...acc, ...this.visit(statement)],
@@ -598,29 +614,26 @@ export default parser => {
       ];
     }
 
-    terminate() {
-      return ["00000000"];
-    }
-
     target(ctx) {
       const { LABEL } = ctx.children;
-      return [{ type: "key", name: LABEL[0].image }];
+      return [{ type: "key", name: this.checkAddressName(LABEL[0].image) }];
+    }
+
+    globals() {
+      return [];
     }
 
     program(ctx) {
       const data = this.visit(ctx.data) || [];
 
-      const main = this.visit(ctx.main);
+      const main = this.visit(ctx.main) || [];
 
       const methods = (ctx.method || []).reduce(
         (acc, method) => [...acc, ...this.visit(method)],
         []
       );
 
-      const preprocess = [...data, ...main, ...methods];
-
-      const postprocess = postProcessor(preprocess);
-      return postprocess.join("");
+      return [...data, ...main, ...methods];
     }
   }
 

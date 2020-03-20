@@ -72,6 +72,10 @@ const DT_WORD = createToken({
   name: "DT_WORD",
   pattern: /\.word/
 });
+const GLOBAL = createToken({
+  name: "GLOBAL",
+  pattern: /\.global/
+});
 
 const LABEL = createToken({ name: "LABEL", pattern: /[a-zA-Z]+[a-zA-Z0-9_]*/ });
 
@@ -127,6 +131,7 @@ export const orderedTokens = [
   DT_BYTE,
   DT_SPACE,
   DT_WORD,
+  GLOBAL,
   LABEL
 ];
 

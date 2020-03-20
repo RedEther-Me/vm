@@ -12,8 +12,11 @@ const printAddress = address => address.toString(2).padStart(16, "0");
 
 const countKey = "@@@@___count";
 
-export default program => {
-  const setup = [["main", printAddress(IVT_SIZE)]];
+export default (program, globals) => {
+  const setup = [
+    ["main", () => printAddress(IVT_SIZE)],
+    ["@@@@____program-size", firstpass => firstpass.length / 8]
+  ];
   const sizeOfHeaders = setup.length * 2;
 
   // Replace ADDRESS with values
@@ -49,8 +52,18 @@ export default program => {
       const address = labelMap[item.name];
 
       if (address === undefined) {
+        if (globals[item.name]) {
+          return globals[item.name];
+        }
+
         throw new Error(`${item.name} is not defined`);
       }
+
+      return printAddress(address);
+    }
+
+    if (isTypeOf(item, "global")) {
+      const address = labelMap[item.name];
 
       return printAddress(address);
     }
@@ -65,9 +78,15 @@ export default program => {
   // Filter out LABELS
   const filtered = replaced.filter(item => !isTypeOf(item, "key"));
 
-  const setupArr = setup.map(([key, value]) =>
-    printAddress(labelMap[key] || value)
+  const firstArr = setup.map(([key, calcValue]) =>
+    printAddress(labelMap[key] || calcValue(""))
   );
 
-  return [...setupArr, ...filtered];
+  const firstpass = [...firstArr, ...filtered].join("");
+
+  const setupArr = setup.map(([key, calcValue]) =>
+    printAddress(labelMap[key] || calcValue(firstpass))
+  );
+
+  return [...setupArr, ...filtered].join("");
 };
