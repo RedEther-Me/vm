@@ -20,10 +20,10 @@ describe("convertToInstruction.js", () => {
 
   describe("memory", () => {
     describe.only("load", () => {
-      it("LOAD 0x3000 r4", () => {
+      it("LOAD 0x3000 $r4", () => {
         const result = tester.load({
           children: {
-            REG: [{ image: "r4" }],
+            REG: [{ image: "$r4" }],
             reg_hex: [
               {
                 children: {
@@ -41,14 +41,14 @@ describe("convertToInstruction.js", () => {
         ]);
       });
 
-      it("LOAD r3 r4", () => {
+      it("LOAD $r3 $r4", () => {
         const result = tester.load({
           children: {
-            REG: [{ image: "r4" }],
+            REG: [{ image: "$r4" }],
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r3" }]
+                  REG: [{ image: "$r3" }]
                 }
               }
             ]
@@ -60,13 +60,13 @@ describe("convertToInstruction.js", () => {
     });
 
     describe.only("store", () => {
-      it("STORE r4 0x3000", () => {
+      it("STORE $r4 0x3000", () => {
         const result = tester.store({
           children: {
             reg_lit_hex_char: [
               {
                 children: {
-                  REG: [{ image: "r4" }]
+                  REG: [{ image: "$r4" }]
                 }
               }
             ],
@@ -168,20 +168,20 @@ describe("convertToInstruction.js", () => {
         ]);
       });
 
-      it("STORE r4 r5", () => {
+      it("STORE $r4 $r5", () => {
         const result = tester.store({
           children: {
             reg_lit_hex_char: [
               {
                 children: {
-                  REG: [{ image: "r4" }]
+                  REG: [{ image: "$r4" }]
                 }
               }
             ],
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r5" }]
+                  REG: [{ image: "$r5" }]
                 }
               }
             ]
@@ -191,7 +191,7 @@ describe("convertToInstruction.js", () => {
         expect(result).toEqual([i2s(INSTRUCTIONS.STORE_REG_REG), "01100101"]);
       });
 
-      it("STORE 0x01 r5", () => {
+      it("STORE 0x01 $r5", () => {
         const result = tester.store({
           children: {
             reg_lit_hex_char: [
@@ -204,7 +204,7 @@ describe("convertToInstruction.js", () => {
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r5" }]
+                  REG: [{ image: "$r5" }]
                 }
               }
             ]
@@ -218,7 +218,7 @@ describe("convertToInstruction.js", () => {
         ]);
       });
 
-      it("STORE 5 r5", () => {
+      it("STORE 5 $r5", () => {
         const result = tester.store({
           children: {
             reg_lit_hex_char: [
@@ -231,7 +231,7 @@ describe("convertToInstruction.js", () => {
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r5" }]
+                  REG: [{ image: "$r5" }]
                 }
               }
             ]
@@ -245,7 +245,7 @@ describe("convertToInstruction.js", () => {
         ]);
       });
 
-      it("STORE 'H' r5", () => {
+      it("STORE 'H' $r5", () => {
         const result = tester.store({
           children: {
             reg_lit_hex_char: [
@@ -258,7 +258,7 @@ describe("convertToInstruction.js", () => {
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r5" }]
+                  REG: [{ image: "$r5" }]
                 }
               }
             ]
@@ -299,18 +299,18 @@ describe("convertToInstruction.js", () => {
         ]);
       });
 
-      it("COPY r3 r4", () => {
+      it("COPY $r3 $r4", () => {
         const result = tester.copy({
           children: {
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r3" }]
+                  REG: [{ image: "$r3" }]
                 }
               },
               {
                 children: {
-                  REG: [{ image: "r4" }]
+                  REG: [{ image: "$r4" }]
                 }
               }
             ]
@@ -320,13 +320,13 @@ describe("convertToInstruction.js", () => {
         expect(result).toEqual([i2s(INSTRUCTIONS.COPY_REG_REG), "01010100"]);
       });
 
-      it("COPY r4 0x3001", () => {
+      it("COPY $r4 0x3001", () => {
         const result = tester.copy({
           children: {
             reg_hex: [
               {
                 children: {
-                  REG: [{ image: "r4" }]
+                  REG: [{ image: "$r4" }]
                 }
               },
               {
@@ -345,7 +345,7 @@ describe("convertToInstruction.js", () => {
         ]);
       });
 
-      it("COPY 0x3000 r4", () => {});
+      it("COPY 0x3000 $r4", () => {});
       const result = tester.copy({
         children: {
           reg_hex: [
@@ -356,7 +356,7 @@ describe("convertToInstruction.js", () => {
             },
             {
               children: {
-                REG: [{ image: "r4" }]
+                REG: [{ image: "$r4" }]
               }
             }
           ]
@@ -375,7 +375,7 @@ describe("convertToInstruction.js", () => {
     it("valid - add", () => {
       const result = tester.arithmetic({
         children: {
-          REG: [{ image: "r1" }, { image: "r2" }],
+          REG: [{ image: "$r1" }, { image: "$r2" }],
           ADD: []
         }
       });
@@ -386,7 +386,7 @@ describe("convertToInstruction.js", () => {
     it("valid - sub", () => {
       const result = tester.arithmetic({
         children: {
-          REG: [{ image: "r1" }, { image: "r2" }],
+          REG: [{ image: "$r1" }, { image: "$r2" }],
           SUB: []
         }
       });
@@ -397,7 +397,7 @@ describe("convertToInstruction.js", () => {
     it("valid - mult", () => {
       const result = tester.arithmetic({
         children: {
-          REG: [{ image: "r1" }, { image: "r2" }],
+          REG: [{ image: "$r1" }, { image: "$r2" }],
           MULT: []
         }
       });
@@ -408,7 +408,7 @@ describe("convertToInstruction.js", () => {
     it("valid - div", () => {
       const result = tester.arithmetic({
         children: {
-          REG: [{ image: "r1" }, { image: "r2" }],
+          REG: [{ image: "$r1" }, { image: "$r2" }],
           DIV: []
         }
       });

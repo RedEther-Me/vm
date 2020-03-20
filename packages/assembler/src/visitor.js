@@ -123,13 +123,13 @@ export default parser => {
     }
 
     hex_lit(ctx) {
-      const { HEX_VALUE } = ctx.children;
+      const { HEX_VALUE, LITERAL } = ctx.children;
 
       if (HEX_VALUE) {
         return this.hex(HEX_VALUE[0]);
       }
 
-      return this.literal(ctx);
+      return this.literal(LITERAL[0]);
     }
 
     reg_hex(ctx) {
