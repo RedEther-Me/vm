@@ -60,6 +60,8 @@ const OR_LIT = "OR_LIT";
 const XOR_REG = "XOR_REG";
 const XOR_LIT = "XOR_LIT";
 
+const SET_IVT = "SET_IVT";
+
 const instructions = {
   [TERMINATE]: 0x00,
 
@@ -124,7 +126,9 @@ const instructions = {
   [OR_REG]: 0x86,
   [OR_LIT]: 0x87,
   [XOR_REG]: 0x88,
-  [XOR_LIT]: 0x89
+  [XOR_LIT]: 0x89,
+
+  [SET_IVT]: 0xf0
 };
 
 export default {
@@ -511,6 +515,10 @@ export default {
     pattern: {
       T: { P: 0xf0, S: 4 }
     }
+  },
+
+  [SET_IVT]: {
+    instruction: instructions[SET_IVT]
   }
 };
 

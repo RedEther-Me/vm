@@ -4,7 +4,8 @@ import {
   readFileAsync,
   createMemory,
   CPU,
-  MemoryController
+  MemoryController,
+  BOOT_ADDRESS
 } from "@emulator/core";
 
 import createDisplayDevice from "./display-controller.js";
@@ -21,7 +22,7 @@ async function processFile() {
   const lines = file.match(/.{1,16}/g);
 
   lines.forEach((line, index) => {
-    memory.setUint16(index * 2, parseInt(line, 2));
+    memory.setUint16(BOOT_ADDRESS + index * 2, parseInt(line, 2));
   });
 
   const mm = new MemoryController();

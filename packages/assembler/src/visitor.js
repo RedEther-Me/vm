@@ -496,6 +496,14 @@ export default parser => {
       return [i2s(instruction), i2s(fullInstruction), ...extraInstruction];
     }
 
+    set_ivt(ctx) {
+      const { value } = this.label(ctx);
+
+      const { instruction } = INSTRUCTIONS.SET_IVT;
+
+      return [i2s(instruction), value];
+    }
+
     statement(ctx) {
       const command = Object.keys(ctx)[0];
 

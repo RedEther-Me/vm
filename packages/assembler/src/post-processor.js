@@ -1,3 +1,5 @@
+import { IVT_SIZE } from "@emulator/core";
+
 const isTypeOf = (item, type) => {
   if (type === "string" && typeof item === "string") {
     return true;
@@ -11,7 +13,8 @@ const printAddress = address => address.toString(2).padStart(16, "0");
 const countKey = "@@@@___count";
 
 export default program => {
-  const setup = [["main", printAddress(0)]];
+  const setup = [["main", printAddress(IVT_SIZE)]];
+  const sizeOfHeaders = setup.length * 2;
 
   // Replace ADDRESS with values
 
@@ -38,7 +41,7 @@ export default program => {
 
       return { ...map, [countKey]: map[countKey] + item.length / 8 };
     },
-    { [countKey]: 2 }
+    { [countKey]: IVT_SIZE + sizeOfHeaders }
   );
 
   const replaced = program.map(item => {

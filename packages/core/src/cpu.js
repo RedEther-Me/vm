@@ -3,6 +3,8 @@ import { convertFromInstruction } from "./helpers/index.js";
 import createMemory from "./memory.js";
 import INSTRUCTIONS from "./instructions.js";
 
+import { BOOT_ADDRESS } from "./constants.js";
+
 class CPU {
   constructor(memory, options = {}) {
     this.memory = memory;
@@ -43,6 +45,7 @@ class CPU {
     this.registerNames.forEach(register => this.setRegisterByName(register, 0));
     this.setRegisterByName("sp", 0xffff - 1);
     this.setRegisterByName("fp", 0xffff - 1);
+    this.setRegisterByName("ip", BOOT_ADDRESS);
 
     this.stackFrameSize = 0;
 
@@ -821,6 +824,17 @@ class CPU {
         return;
       }
 
+      case INSTRUCTIONS.SET_IVT.instruction: {
+        const address = this.fetch16();
+
+        this.setMemoryByAddress(2, address);
+
+        this.logger.log("SET_IVT", {
+          address
+        });
+        return;
+      }
+
       default: {
         throw new Error(
           `Illegal Instruction: 0x${instruction.toString(16).padStart(2)}`
@@ -830,7 +844,7 @@ class CPU {
   }
 
   step() {
-    if (this.getRegister("ip") === 0x0) {
+    if (this.getRegister("ip") === BOOT_ADDRESS) {
       const firstInstruction = this.fetch16();
 
       this.setRegisterByName("ip", firstInstruction);

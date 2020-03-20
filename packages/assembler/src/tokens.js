@@ -33,6 +33,8 @@ const XOR = createToken({ name: "XOR", pattern: /XOR/ });
 
 const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
+const SET_IVT = createToken({ name: "SET_IVT", pattern: /SIVT/ });
+
 const REG = createToken({
   name: "REG",
   pattern: /\$(acc|sp|fp|rip|ip|v1|r[0-8])/
@@ -111,6 +113,7 @@ export const orderedTokens = [
   OR,
   XOR,
   TERM,
+  SET_IVT,
   REG,
   HEX_VALUE,
   CHAR,

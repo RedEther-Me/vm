@@ -143,6 +143,11 @@ class AsmParser extends CstParser {
       $.CONSUME2(allTokens.REG);
     });
 
+    $.RULE("set_ivt", () => {
+      $.CONSUME(allTokens.SET_IVT);
+      $.CONSUME(allTokens.LABEL);
+    });
+
     $.RULE("statement", () => {
       $.OR([
         { ALT: () => $.SUBRULE($.mov) },
@@ -155,7 +160,8 @@ class AsmParser extends CstParser {
         { ALT: () => $.SUBRULE($.arithmetic) },
         { ALT: () => $.SUBRULE($.binary) },
         { ALT: () => $.SUBRULE($.target) },
-        { ALT: () => $.SUBRULE($.jump) }
+        { ALT: () => $.SUBRULE($.jump) },
+        { ALT: () => $.SUBRULE($.set_ivt) }
       ]);
     });
 
