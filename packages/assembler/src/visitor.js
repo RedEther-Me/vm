@@ -18,6 +18,15 @@ const registerLookup = {
   $rip: 12
 };
 
+const charToNum = char => {
+  switch (char) {
+    case "\\n":
+      return 10;
+    default:
+      return char.charCodeAt(0);
+  }
+};
+
 const i2s = (instruction, length = 8) =>
   instruction.toString(2).padStart(length, "0");
 
@@ -60,10 +69,10 @@ export default parser => {
 
     char(ctx) {
       if (ctx.image[1] === "\\") {
-        return ctx.image.charCodeAt(2);
+        return charToNum(ctx.image.substring(1, 3));
       }
 
-      return ctx.image.charCodeAt(1);
+      return charToNum(ctx.image[1]);
     }
 
     reg_lit_hex_char_label(ctx) {
@@ -398,10 +407,17 @@ export default parser => {
       return [i2s(instruction)];
     }
 
-    jump_not_equal(ctx) {
+    jump(ctx) {
+      const { JUMP, JUMP_EQUAL, JUMP_NOT_EQUAL } = ctx.children;
       const { value } = this.label(ctx);
 
-      const { instruction } = INSTRUCTIONS.JMP_NOT_EQ;
+      const opLookup = () => {
+        if (JUMP) return INSTRUCTIONS.JMP;
+        if (JUMP_EQUAL) return INSTRUCTIONS.JMP_EQ;
+        if (JUMP_NOT_EQUAL) return INSTRUCTIONS.JMP_NOT_EQ;
+      };
+
+      const { instruction } = opLookup();
 
       return [i2s(instruction), value];
     }
@@ -503,12 +519,18 @@ export default parser => {
 
       let i = 0;
       for (i = 0; i < value.length; i += 1) {
+        let lookup = charToNum(value[i]);
+
         if (value[i] === "\\") {
+          lookup = charToNum(value.substring(i, i + 2));
           i += 1;
         }
 
-        vArr.push(i2s(value[i].charCodeAt(0), 16));
+        vArr.push(i2s(lookup, 16));
       }
+
+      // Add a NUL character at the end
+      vArr.push(i2s(0, 16));
 
       const joined = vArr.join("");
       return [joined, joined.length];
@@ -520,7 +542,7 @@ export default parser => {
 
     space(ctx) {
       const { value } = this.literal(ctx.LITERAL[0]);
-      const size = value * 4;
+      const size = value * 8;
 
       return [i2s(0, size), size];
     }
@@ -588,6 +610,7 @@ export default parser => {
       );
 
       const preprocess = [...data, ...main, ...methods];
+
       const postprocess = postProcessor(preprocess);
       return postprocess.join("");
     }

@@ -109,8 +109,12 @@ class AsmParser extends CstParser {
       $.SUBRULE2($.reg_hex_label);
     });
 
-    $.RULE("jump_not_equal", () => {
-      $.CONSUME(allTokens.JUMP_NOT_EQUAL);
+    $.RULE("jump", () => {
+      $.OR([
+        { ALT: () => $.CONSUME(allTokens.JUMP_NOT_EQUAL) },
+        { ALT: () => $.CONSUME(allTokens.JUMP_EQUAL) },
+        { ALT: () => $.CONSUME(allTokens.JUMP) }
+      ]);
       $.CONSUME(allTokens.LABEL);
     });
 
@@ -151,7 +155,7 @@ class AsmParser extends CstParser {
         { ALT: () => $.SUBRULE($.arithmetic) },
         { ALT: () => $.SUBRULE($.binary) },
         { ALT: () => $.SUBRULE($.target) },
-        { ALT: () => $.SUBRULE($.jump_not_equal) }
+        { ALT: () => $.SUBRULE($.jump) }
       ]);
     });
 

@@ -15,6 +15,8 @@ const POP = createToken({ name: "POP", pattern: /POP/ });
 const CALL = createToken({ name: "CALL", pattern: /CALL/ });
 const RET = createToken({ name: "RET", pattern: /RET/ });
 const JUMP_NOT_EQUAL = createToken({ name: "JUMP_NOT_EQUAL", pattern: /JNE/ });
+const JUMP_EQUAL = createToken({ name: "JUMP_EQUAL", pattern: /JE/ });
+const JUMP = createToken({ name: "JUMP", pattern: /J/ });
 
 const ADD = createToken({ name: "ADD", pattern: /ADD[U]?/ });
 const SUB = createToken({ name: "SUB", pattern: /SUB/ });
@@ -33,7 +35,7 @@ const TERM = createToken({ name: "TERM", pattern: /TERM/ });
 
 const REG = createToken({
   name: "REG",
-  pattern: /\$(acc|sp|fp|rip|ip|r[0-8])/
+  pattern: /\$(acc|sp|fp|rip|ip|v1|r[0-8])/
 });
 
 const LITERAL = createToken({ name: "LITERAL", pattern: /[\-]?[0-9]+/ });
@@ -95,6 +97,8 @@ export const orderedTokens = [
   CALL,
   RET,
   JUMP_NOT_EQUAL,
+  JUMP_EQUAL,
+  JUMP,
   ADD,
   SUB,
   MULT,

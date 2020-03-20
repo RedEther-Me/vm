@@ -23,7 +23,8 @@ class CPU {
       "r8",
       "sp",
       "fp",
-      "rip"
+      "rip",
+      "v1"
     ];
 
     this.registers = createMemory(this.registerNames.length * 2);
@@ -445,6 +446,7 @@ class CPU {
 
         let logInstruction;
         let result;
+        let remainder;
         switch (instruction) {
           case INSTRUCTIONS.ADD_REG.instruction:
           case INSTRUCTIONS.ADDU_REG.instruction: {
@@ -470,9 +472,11 @@ class CPU {
           }
           case INSTRUCTIONS.DIV_REG.instruction: {
             logInstruction = "DIV_REG [v2 / v1]";
-            result = v2 / v1;
+            remainder = v2 % v1;
+            result = (v2 - remainder) / v1;
 
             this.setRegisterByAddress(T * 2, result);
+            this.setRegisterByName("acc", remainder);
             break;
           }
           case INSTRUCTIONS.MOD_REG.instruction: {
@@ -690,14 +694,42 @@ class CPU {
       }
 
       // Jump if not equal
+      case INSTRUCTIONS.JMP.instruction:
+      case INSTRUCTIONS.JMP_EQ.instruction:
       case INSTRUCTIONS.JMP_NOT_EQ.instruction: {
         const cmp = this.getRegister("acc");
         const rip = this.getRegister("rip");
         const address = this.fetch16();
 
-        if (!(cmp & 0x1)) {
-          this.setRegisterByName("ip", rip + address);
+        const isEqual = cmp & 0x1;
+
+        let logInstruction;
+        switch (instruction) {
+          case INSTRUCTIONS.JMP.instruction: {
+            logInstruction = "JMP";
+            this.setRegisterByName("ip", rip + address);
+            break;
+          }
+          case INSTRUCTIONS.JMP_EQ.instruction: {
+            logInstruction = "JMP_EQ";
+            if (isEqual) {
+              this.setRegisterByName("ip", rip + address);
+            }
+            break;
+          }
+          case INSTRUCTIONS.JMP_NOT_EQ.instruction: {
+            logInstruction = "JMP_NOT_EQ";
+            if (!isEqual) {
+              this.setRegisterByName("ip", rip + address);
+            }
+            break;
+          }
         }
+
+        this.logger.log(logInstruction, {
+          isEqual,
+          value: rip + address
+        });
 
         return;
       }

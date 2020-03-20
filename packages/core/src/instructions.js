@@ -24,6 +24,8 @@ const CAL_REG = "CAL_REG";
 const RET = "RET";
 
 const JMP_NOT_EQ = "JMP_NOT_EQ";
+const JMP_EQ = "JMP_EQ";
+const JMP = "JMP";
 
 const PSH_LIT = "PSH_LIT";
 const PSH_REG = "PSH_REG";
@@ -68,6 +70,8 @@ const instructions = {
   [CAL_REG]: 0x11,
   [RET]: 0x13,
   [JMP_NOT_EQ]: 0x15,
+  [JMP_EQ]: 0x16,
+  [JMP]: 0x17,
 
   [PSH_LIT]: 0x21,
   [PSH_REG]: 0x22,
@@ -242,6 +246,14 @@ export default {
 
   [JMP_NOT_EQ]: {
     instruction: instructions[JMP_NOT_EQ]
+  },
+
+  [JMP_EQ]: {
+    instruction: instructions[JMP_EQ]
+  },
+
+  [JMP]: {
+    instruction: instructions[JMP]
   },
 
   [CAL_LIT]: {

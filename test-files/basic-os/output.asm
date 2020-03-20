@@ -16,8 +16,6 @@
   printString:
     MOV $fp $acc
     ADDU 24 $acc               ## Location of Argument Count
-    ADDU 2 $acc                ## Location of Character Count
-    LOAD $acc $r1
     ADDU 2 $acc                ## Location of First Character Address
     LOAD $acc $r2
 
@@ -34,15 +32,34 @@
     ADD $r4 $r7
 
     printChar:
-    COPY $r2 $r7              ## PRINT FIRST CHARACTER TO SCREEN
+    LOAD $r2 $r1
+
+    CMP 0 $r1
+    JE skipPrintChar
+
+    CMP 10 $r1
+    JNE skipNewLine
+
+    MOV $r7 $r3
+    SUB $r6 $r3
+    DIV $r5 $r3               ## $acc now has the number of characters into the line
+    MOV $r5 $r3               ## $r3 is 80
+    SUB $acc $r3              ## 80 - R => C, C is the compliment
+    ADD $r3 $r7
+    SUB 1 $r7
+
+    skipNewLine:
+
+    COPY $r2 $r7              ## Print character to screen
     ADD 2 $r2                 ## Move to next character
     ADD 1 $r7                 ## Move to next visual position
 
-    SUB 1 $r1                 ## Decrement characters left
-    CMP 0 $r1                 ## Compare 0 to $R1
-    JNE printChar             ## Jump to label if ZF is not set
+    J printChar             ## Jump to label if ZF is not set
+
+    skipPrintChar:
 
     ## Increment the line counter
+    SUB $r6 $r7
     DIV $r5 $r7               ## Divide current visual position by characters per row
     STORE $acc col            ## Store remaineder into [col]
     STORE $r7 row             ## Store row count into [row]
