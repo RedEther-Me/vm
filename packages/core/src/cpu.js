@@ -26,6 +26,7 @@ class CPU {
       "sp",
       "fp",
       "rip",
+      "v0",
       "v1"
     ];
 
@@ -580,7 +581,7 @@ class CPU {
           case INSTRUCTIONS.CMPU_REG.instruction: {
             v1 = this.fetch16();
             v2 = this.registers.getUint16(T * 2);
-            console.log(v1, v2);
+            this.logger.log(v1, v2);
             unsigned = true;
             break;
           }
@@ -856,12 +857,15 @@ class CPU {
   }
 
   run() {
-    const halt = this.step();
-
-    if (halt !== -1) {
-      // setImmediate(() => this.run());
-      this.run();
-    }
+    const intervalId = setInterval(() => {
+      let i;
+      for (i = 0; i < 20; i += 1) {
+        const halt = this.step();
+        if (halt === -1) {
+          clearInterval(intervalId);
+        }
+      }
+    }, 1);
   }
 
   issueEvent(type) {

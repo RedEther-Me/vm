@@ -10,6 +10,8 @@ import {
 
 import createDisplayDevice from "./display-controller.js";
 
+const stdin = process.openStdin();
+
 commander.option("-f, --file [file]", "executable file", "output.bin");
 
 commander.parse(process.argv);
@@ -35,3 +37,7 @@ async function processFile() {
 }
 
 processFile();
+
+stdin.on("data", function(chunk) {
+  process.exit(0);
+});

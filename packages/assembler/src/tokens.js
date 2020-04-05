@@ -37,7 +37,7 @@ const SET_IVT = createToken({ name: "SET_IVT", pattern: /SIVT/ });
 
 const REG = createToken({
   name: "REG",
-  pattern: /\$(acc|sp|fp|rip|ip|v1|r[0-8])/
+  pattern: /\$(acc|sp|fp|rip|ip|v[0-1]|r[0-8])/
 });
 
 const LITERAL = createToken({ name: "LITERAL", pattern: /[\-]?[0-9]+/ });

@@ -13,7 +13,9 @@ const registerLookup = {
   $r8: 9,
   $sp: 10,
   $fp: 11,
-  $rip: 12
+  $rip: 12,
+  $v0: 13,
+  $v1: 14
 };
 
 const charToNum = char => {
