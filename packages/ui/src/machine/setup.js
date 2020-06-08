@@ -2,12 +2,12 @@ import {
   CPU,
   MemoryController,
   createMemory,
-  BOOT_ADDRESS
+  BOOT_ADDRESS,
 } from "@emulator/core";
 
 export let machine;
 
-export const loadMedia = file => {
+export const loadMedia = (file) => {
   const lines = file.match(/.{1,8}/g);
 
   lines.forEach((line, index) => {
@@ -29,7 +29,7 @@ export const loadMedia = file => {
 
     machine = {
       cpu,
-      mm
+      mm,
     };
   }
 })();

@@ -1,11 +1,12 @@
 import React, { Fragment, useReducer, useEffect } from "react";
 import { Row, Col } from "reactstrap";
 
-import { machine } from "../machine/setup";
+// import { machine } from "../machine/setup";
+import cpuInterface from "../machine/interface";
 
 import RegisterTable from "./RegisterTable";
-import StackTable from "./StackTable";
-import MemoryTable from "./MemoryTable";
+// import StackTable from "./StackTable";
+// import MemoryTable from "./MemoryTable";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -15,14 +16,14 @@ const reducer = (state, action) => {
       return {
         ...state,
         ...registers,
-        id: state.id + 1
+        id: state.id + 1,
       };
     }
     case "setRegister": {
       const { register, value } = action;
       return {
         ...state,
-        [register]: value
+        [register]: value,
       };
     }
     default:
@@ -34,10 +35,10 @@ function Program() {
   const [registers, dispatch] = useReducer(reducer, { id: 0 });
 
   useEffect(() => {
-    machine.cpu.addListener("program", dispatch);
+    cpuInterface.addEventListener("program", "any", dispatch);
 
     return () => {
-      machine.cpu.removeListener("program");
+      cpuInterface.removeEventListener("program");
     };
   }, []);
 
@@ -49,12 +50,12 @@ function Program() {
         </Col>
       </Row>
       <Row>
-        <Col>
+        {/* <Col>
           <MemoryTable {...{ registers }} />
         </Col>
         <Col>
           <StackTable {...{ registers }} />
-        </Col>
+        </Col> */}
       </Row>
     </Fragment>
   );

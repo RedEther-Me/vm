@@ -1,13 +1,13 @@
 import React, { useRef, useLayoutEffect } from "react";
 
-import { machine } from "../machine/setup";
+import cpuInterface from "../machine/interface";
 
 const NUM_COLS = 80;
 const NUM_ROWS = 30;
 
 const color = "grey";
 
-const Surface = props => {
+const Surface = (props) => {
   const surfaceRef = useRef();
 
   useLayoutEffect(() => {
@@ -51,11 +51,11 @@ const Surface = props => {
             writeCharacter({ char, x, y });
           }
         }
-      }
+      },
     };
 
     clearScreen();
-    machine.mm.map("display", displayDevice, 0x3000, 0x30ff);
+    cpuInterface.registerDevice("display", displayDevice, 0x3000, 0x30ff);
   }, []);
 
   // BORDER TEST

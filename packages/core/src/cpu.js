@@ -27,7 +27,7 @@ class CPU {
       "fp",
       "rip",
       "v0",
-      "v1"
+      "v1",
     ];
 
     this.registers = createMemory(this.registerNames.length * 2);
@@ -43,7 +43,9 @@ class CPU {
   }
 
   reset() {
-    this.registerNames.forEach(register => this.setRegisterByName(register, 0));
+    this.registerNames.forEach((register) =>
+      this.setRegisterByName(register, 0)
+    );
     this.setRegisterByName("sp", 0xffff - 1);
     this.setRegisterByName("fp", 0xffff - 1);
     this.setRegisterByName("ip", BOOT_ADDRESS);
@@ -92,8 +94,6 @@ class CPU {
 
   setMemoryByAddress(address, value) {
     this.memory.setUint16(address, value);
-
-    this.issueEvent({ type: "setMemory", address, value });
   }
 
   fetch() {
@@ -278,7 +278,7 @@ class CPU {
 
         this.logger.log("STORE_LIT_HEX", {
           value,
-          address: `${rip + address} 0x${rip + address.toString(16)}`
+          address: `${rip + address} 0x${rip + address.toString(16)}`,
         });
 
         this.setMemoryByAddress(rip + address, value);
@@ -321,7 +321,7 @@ class CPU {
           value,
           rip: `${rip} 0x${rip.toString(16)}`,
           address: `${address} 0x${address.toString(16)}`,
-          final: `${rip + address} 0x${(rip + address).toString(16)}`
+          final: `${rip + address} 0x${(rip + address).toString(16)}`,
         });
         return;
       }
@@ -367,12 +367,12 @@ class CPU {
           from: {
             name: this.getName(S * 2),
             location: `${from} 0x${from.toString(16)}`,
-            value
+            value,
           },
           to: {
             name: this.getName(T * 2),
-            location: `${to} 0x${to.toString(16)}`
-          }
+            location: `${to} 0x${to.toString(16)}`,
+          },
         });
 
         this.setMemoryByAddress(to, value);
@@ -540,13 +540,13 @@ class CPU {
         this.logger.log(logInstruction, {
           v2: {
             name: this.getName(T * 2),
-            value: v2
+            value: v2,
           },
           v1: {
             name: this.getName(S * 2),
-            value: v1
+            value: v1,
           },
-          result: v2 + v1
+          result: v2 + v1,
         });
 
         return;
@@ -686,12 +686,12 @@ class CPU {
         this.logger.log(logInstruction, {
           v2: {
             name: this.getName(T * 2),
-            value: v2
+            value: v2,
           },
           v1: {
-            value: v1
+            value: v1,
           },
-          result
+          result,
         });
 
         return;
@@ -732,7 +732,7 @@ class CPU {
 
         this.logger.log(logInstruction, {
           isEqual,
-          value: rip + address
+          value: rip + address,
         });
 
         return;
@@ -744,7 +744,7 @@ class CPU {
         this.push(value);
 
         this.logger.log("PSH_LIT", {
-          value
+          value,
         });
         return;
       }
@@ -763,7 +763,7 @@ class CPU {
 
         this.logger.log("PSH_REG", {
           name: this.getName(R * 2),
-          value
+          value,
         });
         return;
       }
@@ -779,7 +779,7 @@ class CPU {
 
         this.logger.log("POP", {
           name: this.getName(R * 2),
-          value
+          value,
         });
         return;
       }
@@ -793,7 +793,7 @@ class CPU {
         this.setRegisterByName("ip", rip + address);
 
         this.logger.log("CAL_LIT", {
-          address
+          address,
         });
         return;
       }
@@ -814,7 +814,7 @@ class CPU {
         this.setRegisterByName("ip", rip + address);
 
         this.logger.log("CAL_LIT", {
-          address
+          address,
         });
         return;
       }
@@ -831,7 +831,7 @@ class CPU {
         this.setMemoryByAddress(2, address);
 
         this.logger.log("SET_IVT", {
-          address
+          address,
         });
         return;
       }
@@ -870,7 +870,7 @@ class CPU {
 
   issueEvent(type) {
     if (this.listeners) {
-      Object.values(this.listeners).forEach(listener => listener(type));
+      Object.values(this.listeners).forEach((listener) => listener(type));
     }
   }
 
@@ -882,7 +882,7 @@ class CPU {
       ...this.registerNames.reduce(
         (acc, reg) => ({ ...acc, [reg]: this.getRegister(reg) }),
         {}
-      )
+      ),
     });
   }
 

@@ -3,7 +3,7 @@ import { Table, Input } from "reactstrap";
 
 import { machine } from "../machine/setup";
 
-const RuntimeView = props => {
+const RuntimeView = (props) => {
   const { registers } = props;
   const { ip = 0, id } = registers;
 
@@ -24,7 +24,7 @@ const RuntimeView = props => {
   }, [ip, id]);
 
   const [lookup, setLookup] = useState([0, 0, 0, 0]);
-  const updateLookup = evt => {
+  const updateLookup = (evt) => {
     const { value } = evt.target;
 
     const isHex = value.indexOf("0x") >= 0;

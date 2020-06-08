@@ -5,9 +5,7 @@ import Surface from "../components/Surface";
 import Program from "../components/Program";
 import RunControls from "../components/RunControls";
 
-import { machine } from "../machine/setup";
-
-const RuntimeView = props => {
+const RuntimeView = (props) => {
   return (
     <Container fluid>
       <Row className="mb-2">
