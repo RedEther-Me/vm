@@ -1,13 +1,8 @@
 import React, { useMemo, Fragment } from "react";
 import { Table } from "reactstrap";
 
-import { machine } from "../machine/setup";
-
-const RuntimeView = props => {
-  const { registers } = props;
-
-  const { regions } = machine.mm;
-  const memory = regions.find(reg => reg.deviceName === "memory");
+const RuntimeView = (props) => {
+  const { registers, memory } = props;
 
   const stackTop = memory.end - 1;
   const stackSize = registers.sp ? stackTop - registers.sp : 0;
@@ -18,7 +13,7 @@ const RuntimeView = props => {
     let i = 0;
     for (i = 0; i < stackSize; i += 2) {
       const address = stackTop - i;
-      const value = machine.mm.getUint16(address);
+      const value = memory.getUint16(address);
       arr.push([address, value]);
     }
 

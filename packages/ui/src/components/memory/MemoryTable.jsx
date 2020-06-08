@@ -1,10 +1,8 @@
 import React, { useMemo, useState, Fragment } from "react";
 import { Table, Input } from "reactstrap";
 
-import { machine } from "../machine/setup";
-
 const RuntimeView = (props) => {
-  const { registers } = props;
+  const { registers, memory } = props;
   const { ip = 0, id } = registers;
 
   const stack = useMemo(() => {
@@ -12,10 +10,10 @@ const RuntimeView = (props) => {
 
     let address = 0;
     for (address = 0; address < 16; address += 4) {
-      const value1 = machine.mm.getUint8(ip + address + 0);
-      const value2 = machine.mm.getUint8(ip + address + 1);
-      const value3 = machine.mm.getUint8(ip + address + 2);
-      const value4 = machine.mm.getUint8(ip + address + 3);
+      const value1 = memory.getUint8(ip + address + 0);
+      const value2 = memory.getUint8(ip + address + 1);
+      const value3 = memory.getUint8(ip + address + 2);
+      const value4 = memory.getUint8(ip + address + 3);
 
       list.push([ip + address, value1, value2, value3, value4]);
     }
@@ -31,10 +29,10 @@ const RuntimeView = (props) => {
     const asInt = parseInt(value, isHex ? 16 : 10);
 
     if (asInt > 0) {
-      const value1 = machine.mm.getUint8(asInt + 0);
-      const value2 = machine.mm.getUint8(asInt + 1);
-      const value3 = machine.mm.getUint8(asInt + 2);
-      const value4 = machine.mm.getUint8(asInt + 3);
+      const value1 = memory.getUint8(asInt + 0);
+      const value2 = memory.getUint8(asInt + 1);
+      const value3 = memory.getUint8(asInt + 2);
+      const value4 = memory.getUint8(asInt + 3);
       setLookup([value1, value2, value3, value4]);
     }
   };

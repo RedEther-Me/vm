@@ -1,20 +1,20 @@
 import React, { Fragment, useEffect, useReducer } from "react";
 import { Button } from "reactstrap";
 
-import { machine } from "../machine/setup";
+import cpuInterface from "../machine/interface";
 
 const reducer = (state, action) => {
   switch (action.type) {
     case "halt": {
       return {
         ...state,
-        status: "halt"
+        status: "halt",
       };
     }
     case "reset": {
       return {
         ...state,
-        status: "reset"
+        status: "reset",
       };
     }
     default:
@@ -22,14 +22,14 @@ const reducer = (state, action) => {
   }
 };
 
-const RunControls = props => {
+const RunControls = (props) => {
   const [controls, dispatch] = useReducer(reducer, {});
 
   useEffect(() => {
-    machine.cpu.addListener("controls", dispatch);
+    cpuInterface.addEventListener("controls", "all", dispatch);
 
     return () => {
-      machine.cpu.removeListener("controls");
+      cpuInterface.removeEventListener("controls");
     };
   }, []);
 
@@ -39,7 +39,7 @@ const RunControls = props => {
         color="primary"
         className="mr-1"
         onClick={() => {
-          machine.cpu.step();
+          cpuInterface.step();
         }}
         disabled={controls.status === "halt"}
       >
@@ -49,7 +49,7 @@ const RunControls = props => {
         color="danger"
         className="mr-5"
         onClick={() => {
-          machine.cpu.run();
+          cpuInterface.run();
         }}
         disabled={controls.status === "halt"}
       >
@@ -58,7 +58,7 @@ const RunControls = props => {
       <Button
         color="secondary"
         onClick={() => {
-          machine.cpu.reset();
+          cpuInterface.reset();
         }}
       >
         Reset

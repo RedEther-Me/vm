@@ -1,11 +1,17 @@
+function createMemory(size) {
+  const ab = new ArrayBuffer(size);
+  const dv = new DataView(ab);
+
+  return dv;
+}
+
 class CpuInterface {
   constructor() {
     this.eventListeners = {};
 
     window.ipcRerenderer.on("message", (event, data) => {
-      console.log("------", event);
       Object.values(this.eventListeners).forEach((listener) => {
-        if (listener.event === event || listener.event === "any") {
+        if (listener.event === data.event || listener.event === "any") {
           listener.handler(data);
         }
       });
@@ -18,6 +24,24 @@ class CpuInterface {
 
   removeEventListener(name) {
     delete this.eventListeners[name];
+  }
+
+  step() {
+    window.ipcRerenderer.send("message", {
+      event: "step",
+    });
+  }
+
+  run() {
+    window.ipcRerenderer.send("message", {
+      event: "run",
+    });
+  }
+
+  reset() {
+    window.ipcRerenderer.send("message", {
+      event: "reset",
+    });
   }
 
   registerDevice(name, device, from, to) {

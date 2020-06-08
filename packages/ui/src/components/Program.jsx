@@ -1,12 +1,10 @@
 import React, { Fragment, useReducer, useEffect } from "react";
 import { Row, Col } from "reactstrap";
 
-// import { machine } from "../machine/setup";
 import cpuInterface from "../machine/interface";
 
 import RegisterTable from "./RegisterTable";
-// import StackTable from "./StackTable";
-// import MemoryTable from "./MemoryTable";
+import Memory from "./memory/Memory";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -36,6 +34,7 @@ function Program() {
 
   useEffect(() => {
     cpuInterface.addEventListener("program", "any", dispatch);
+    cpuInterface.reset();
 
     return () => {
       cpuInterface.removeEventListener("program");
@@ -49,14 +48,7 @@ function Program() {
           <RegisterTable {...{ registers }} />
         </Col>
       </Row>
-      <Row>
-        {/* <Col>
-          <MemoryTable {...{ registers }} />
-        </Col>
-        <Col>
-          <StackTable {...{ registers }} />
-        </Col> */}
-      </Row>
+      <Memory {...{ registers }} />
     </Fragment>
   );
 }
